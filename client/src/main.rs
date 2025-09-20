@@ -46,6 +46,32 @@ fn is_zerotier_installed() -> bool {
         .unwrap_or(false)
 }
 
+// Detect Linux distribution
+fn detect_linux_distro() -> String {
+    // Try to read /etc/os-release
+    if let Ok(content) = std::fs::read_to_string("/etc/os-release") {
+        for line in content.lines() {
+            if line.starts_with("ID=") {
+                let id = line.trim_start_matches("ID=").trim_matches('"');
+                return id.to_lowercase();
+            }
+        }
+    }
+    
+    // Fallback: try other methods
+    if std::path::Path::new("/etc/arch-release").exists() {
+        return "arch".to_string();
+    }
+    if std::path::Path::new("/etc/debian_version").exists() {
+        return "debian".to_string();
+    }
+    if std::path::Path::new("/etc/fedora-release").exists() {
+        return "fedora".to_string();
+    }
+    
+    "unknown".to_string()
+}
+
 // Install ZeroTier based on the operating system
 fn install_zerotier() -> Result<(), Box<dyn std::error::Error>> {
     #[cfg(target_os = "windows")]
@@ -72,14 +98,55 @@ fn install_zerotier() -> Result<(), Box<dyn std::error::Error>> {
     #[cfg(target_os = "linux")]
     {
         println!("[*] Installing ZeroTier for Linux...");
-        println!("[*] Using official installation script...");
         
-        let status = Command::new("bash")
-            .args(&["-c", "curl -s https://install.zerotier.com | sudo bash"])
-            .status()?;
+        // Detect the Linux distribution
+        let distro = detect_linux_distro();
+        println!("[*] Detected distribution: {}", distro);
+        
+        let status = match distro.as_str() {
+            "arch" | "manjaro" | "endeavouros" => {
+                println!("[*] Installing via pacman...");
+                Command::new("sudo")
+                    .args(&["pacman", "-S", "--noconfirm", "zerotier-one"])
+                    .status()?
+            },
+            "ubuntu" | "debian" | "mint" | "kali" => {
+                println!("[*] Installing via apt...");
+                let _ = Command::new("sudo")
+                    .args(&["apt", "update"])
+                    .status();
+                Command::new("sudo")
+                    .args(&["apt", "install", "-y", "zerotier-one"])
+                    .status()?
+            },
+            "fedora" | "centos" | "rhel" => {
+                println!("[*] Installing via dnf/yum...");
+                Command::new("sudo")
+                    .args(&["dnf", "install", "-y", "zerotier-one"])
+                    .status()
+                    .or_else(|_| Command::new("sudo")
+                        .args(&["yum", "install", "-y", "zerotier-one"])
+                        .status())?
+            },
+            _ => {
+                println!("[*] Using official installation script for {}", distro);
+                Command::new("bash")
+                    .args(&["-c", "curl -s https://install.zerotier.com | sudo bash"])
+                    .status()?
+            }
+        };
 
         if status.success() {
-            println!("[+] ZeroTier installed! Waiting for service to start...");
+            println!("[+] ZeroTier installed! Starting service...");
+            
+            // Start and enable the service
+            let _ = Command::new("sudo")
+                .args(&["systemctl", "start", "zerotier-one"])
+                .status();
+            let _ = Command::new("sudo")
+                .args(&["systemctl", "enable", "zerotier-one"])
+                .status();
+                
             thread::sleep(Duration::from_secs(5));
         } else {
             return Err("Failed to install ZeroTier".into());

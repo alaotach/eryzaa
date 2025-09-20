@@ -148,6 +148,32 @@ fn is_zerotier_installed() -> bool {
     false
 }
 
+// Detect Linux distribution
+fn detect_linux_distro() -> String {
+    // Try to read /etc/os-release
+    if let Ok(content) = std::fs::read_to_string("/etc/os-release") {
+        for line in content.lines() {
+            if line.starts_with("ID=") {
+                let id = line.trim_start_matches("ID=").trim_matches('"');
+                return id.to_lowercase();
+            }
+        }
+    }
+    
+    // Fallback: try other methods
+    if std::path::Path::new("/etc/arch-release").exists() {
+        return "arch".to_string();
+    }
+    if std::path::Path::new("/etc/debian_version").exists() {
+        return "debian".to_string();
+    }
+    if std::path::Path::new("/etc/fedora-release").exists() {
+        return "fedora".to_string();
+    }
+    
+    "unknown".to_string()
+}
+
 // ...existing code...
 
 // Install ZeroTier
@@ -242,27 +268,60 @@ fn install_zerotier() {
     #[cfg(target_os = "linux")]
     {
         println!("Installing ZeroTier for Linux...");
-        println!("Using official installation script...");
         
-        // First, try to install curl if not available
-        let curl_check = Command::new("which")
-            .arg("curl")
-            .output();
+        // Detect the Linux distribution
+        let distro = detect_linux_distro();
+        println!("Detected distribution: {}", distro);
         
-        if curl_check.is_err() || !curl_check.unwrap().status.success() {
-            println!("Installing curl first...");
-            let _ = Command::new("sudo")
-                .args(&["apt", "update"])
-                .status();
-            let _ = Command::new("sudo")
-                .args(&["apt", "install", "-y", "curl"])
-                .status();
-        }
-        
-        // Use the official ZeroTier installation script
-        let install_status = Command::new("bash")
-            .args(&["-c", "curl -s https://install.zerotier.com | sudo bash"])
-            .status();
+        let install_status = match distro.as_str() {
+            "arch" | "manjaro" | "endeavouros" => {
+                println!("Installing via pacman...");
+                Command::new("sudo")
+                    .args(&["pacman", "-S", "--noconfirm", "zerotier-one"])
+                    .status()
+            },
+            "ubuntu" | "debian" | "mint" | "kali" => {
+                println!("Installing via apt...");
+                let _ = Command::new("sudo")
+                    .args(&["apt", "update"])
+                    .status();
+                Command::new("sudo")
+                    .args(&["apt", "install", "-y", "zerotier-one"])
+                    .status()
+            },
+            "fedora" | "centos" | "rhel" => {
+                println!("Installing via dnf/yum...");
+                Command::new("sudo")
+                    .args(&["dnf", "install", "-y", "zerotier-one"])
+                    .status()
+                    .or_else(|_| Command::new("sudo")
+                        .args(&["yum", "install", "-y", "zerotier-one"])
+                        .status())
+            },
+            _ => {
+                println!("Using official installation script for {}", distro);
+                
+                // First, try to install curl if not available
+                let curl_check = Command::new("which")
+                    .arg("curl")
+                    .output();
+                
+                if curl_check.is_err() || !curl_check.unwrap().status.success() {
+                    println!("Installing curl first...");
+                    let _ = Command::new("sudo")
+                        .args(&["apt", "update"])
+                        .status();
+                    let _ = Command::new("sudo")
+                        .args(&["apt", "install", "-y", "curl"])
+                        .status();
+                }
+                
+                // Use the official ZeroTier installation script
+                Command::new("bash")
+                    .args(&["-c", "curl -s https://install.zerotier.com | sudo bash"])
+                    .status()
+            }
+        };
 
         match install_status {
             Ok(status) if status.success() => {
@@ -280,12 +339,14 @@ fn install_zerotier() {
             }
             Ok(_) => {
                 println!("ZeroTier installation may have failed. Please install manually:");
-                println!("  curl -s https://install.zerotier.com | sudo bash");
+                println!("For Arch Linux: sudo pacman -S zerotier-one");
+                println!("For others: curl -s https://install.zerotier.com | sudo bash");
             }
             Err(e) => {
-                println!("Failed to run installation script: {}", e);
+                println!("Failed to run installation command: {}", e);
                 println!("Please install ZeroTier manually:");
-                println!("  curl -s https://install.zerotier.com | sudo bash");
+                println!("For Arch Linux: sudo pacman -S zerotier-one");
+                println!("For others: curl -s https://install.zerotier.com | sudo bash");
             }
         }
     }
@@ -529,22 +590,54 @@ fn start_ssh_server() {
         if ssh_check.is_err() || !ssh_check.unwrap().status.success() {
             println!("Installing SSH server...");
             
-            // Try apt (Ubuntu/Debian)
-            let apt_status = Command::new("sudo")
-                .args(&["apt", "update"])
-                .status();
-            if apt_status.is_ok() && apt_status.unwrap().success() {
-                let _ = Command::new("sudo")
-                    .args(&["apt", "install", "-y", "openssh-server"])
-                    .status();
-            } else {
-                // Try yum/dnf (RHEL/CentOS/Fedora)
-                let _ = Command::new("sudo")
-                    .args(&["yum", "install", "-y", "openssh-server"])
-                    .status();
-                let _ = Command::new("sudo")
-                    .args(&["dnf", "install", "-y", "openssh-server"])
-                    .status();
+            let distro = detect_linux_distro();
+            match distro.as_str() {
+                "arch" | "manjaro" | "endeavouros" => {
+                    println!("Installing openssh via pacman...");
+                    let _ = Command::new("sudo")
+                        .args(&["pacman", "-S", "--noconfirm", "openssh"])
+                        .status();
+                },
+                "ubuntu" | "debian" | "mint" | "kali" => {
+                    println!("Installing openssh-server via apt...");
+                    let apt_status = Command::new("sudo")
+                        .args(&["apt", "update"])
+                        .status();
+                    if apt_status.is_ok() && apt_status.unwrap().success() {
+                        let _ = Command::new("sudo")
+                            .args(&["apt", "install", "-y", "openssh-server"])
+                            .status();
+                    }
+                },
+                "fedora" | "centos" | "rhel" => {
+                    println!("Installing openssh-server via dnf/yum...");
+                    let _ = Command::new("sudo")
+                        .args(&["dnf", "install", "-y", "openssh-server"])
+                        .status()
+                        .or_else(|_| Command::new("sudo")
+                            .args(&["yum", "install", "-y", "openssh-server"])
+                            .status());
+                },
+                _ => {
+                    println!("Trying default package managers...");
+                    // Try apt first
+                    let apt_status = Command::new("sudo")
+                        .args(&["apt", "update"])
+                        .status();
+                    if apt_status.is_ok() && apt_status.unwrap().success() {
+                        let _ = Command::new("sudo")
+                            .args(&["apt", "install", "-y", "openssh-server"])
+                            .status();
+                    } else {
+                        // Try yum/dnf
+                        let _ = Command::new("sudo")
+                            .args(&["yum", "install", "-y", "openssh-server"])
+                            .status();
+                        let _ = Command::new("sudo")
+                            .args(&["dnf", "install", "-y", "openssh-server"])
+                            .status();
+                    }
+                }
             }
         }
         
