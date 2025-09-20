@@ -1,0 +1,5 @@
+pytest
+pytest-asyncio
+web3
+requests
+pytest-cov
