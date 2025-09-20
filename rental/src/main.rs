@@ -1,79 +1,203 @@
-use std::env;
-use std::process::{Command, Stdio};
-use std::str;
+use std::process::Command;
 use std::thread;
 use std::time::Duration;
+use std::env;
 
 fn main() {
-    let network_id = "363c67c55ad2489d"; // <-- Replace with your network ID
-
-    // Check if this is a restart after installation
-    let args: Vec<String> = env::args().collect();
-    let is_restart = args.len() > 1 && args[1] == "--restart";
-
-    if is_restart {
-        println!("Application restarted after ZeroTier installation.");
-        // Give extra time for service to be ready after restart
-        thread::sleep(Duration::from_secs(5));
-    }
-
-    // Step 1: Install ZeroTier if missing
-    if !is_zerotier_installed() {
-        if is_restart {
-            println!("ZeroTier still not available after restart. Please install manually.");
-            return;
+    println!("=== Rental Server Application ===");
+    println!("Running inside Docker container with Ubuntu");
+    
+    // Display system information
+    display_system_info();
+    
+    // Check ZeroTier status
+    check_zerotier_status();
+    
+    // Check SSH service
+    check_ssh_status();
+    
+    // Check GPU access
+    check_gpu_access();
+    
+    // Display container info
+    display_container_info();
+    
+    println!("[+] Rental server is ready!");
+    println!("[*] Monitoring services...");
+    
+    // Keep the application running and monitor services
+    loop {
+        thread::sleep(Duration::from_secs(30));
+        
+        // Periodic health checks
+        if !is_zerotier_running() {
+            println!("[!] ZeroTier service is down, attempting restart...");
+            restart_zerotier();
         }
+        
+        if !is_ssh_running() {
+            println!("[!] SSH service is down, attempting restart...");
+            restart_ssh();
+        }
+    }
+}
 
-        println!("ZeroTier not found. Installing...");
-        install_zerotier();
+fn display_system_info() {
+    println!("
+=== System Information ===");
+    
+    // OS Info
+    if let Ok(output) = Command::new("uname").arg("-a").output() {
+        println!("OS: {}", String::from_utf8_lossy(&output.stdout).trim());
+    }
+    
+    // CPU Info
+    if let Ok(output) = Command::new("nproc").output() {
+        println!("CPU Cores: {}", String::from_utf8_lossy(&output.stdout).trim());
+    }
+    
+    // Memory Info
+    if let Ok(output) = Command::new("free").args(&["-h"]).output() {
+        let lines: Vec<&str> = String::from_utf8_lossy(&output.stdout).lines().collect();
+        if lines.len() > 1 {
+            println!("Memory: {}", lines[1]);
+        }
+    }
+    
+    // Disk Space
+    if let Ok(output) = Command::new("df").args(&["-h", "/"]).output() {
+        let lines: Vec<&str> = String::from_utf8_lossy(&output.stdout).lines().collect();
+        if lines.len() > 1 {
+            println!("Disk: {}", lines[1]);
+        }
+    }
+}
+
+fn check_zerotier_status() {
+    println!("
+=== ZeroTier Status ===");
+    
+    // Check if ZeroTier is running
+    if is_zerotier_running() {
+        println!("[+] ZeroTier service is running");
         
-        // Wait for installation to complete and service to start
-        println!("Waiting for ZeroTier service to start...");
-        thread::sleep(Duration::from_secs(15));
+        // Get network status
+        if let Ok(output) = Command::new("zerotier-cli").arg("listnetworks").output() {
+            println!("Networks:");
+            println!("{}", String::from_utf8_lossy(&output.stdout));
+        }
         
-        // Verify installation worked
-        if !is_zerotier_installed() {
-            println!("ZeroTier installation completed but may need system restart. Restarting application...");
-            restart_application();
-            return;
-        } else {
-            println!("ZeroTier installation verified successfully.");
+        // Get node info
+        if let Ok(output) = Command::new("zerotier-cli").arg("info").output() {
+            println!("Node Info: {}", String::from_utf8_lossy(&output.stdout).trim());
         }
     } else {
-        println!("ZeroTier is already installed.");
-        
-        // Check if service is running
-        #[cfg(target_os = "windows")]
-        {
-            let service_status = Command::new("powershell")
-                .args(&["-Command", "Get-Service -Name 'ZeroTierOneService' | Select-Object -ExpandProperty Status"])
-                .output();
-                
-            if let Ok(output) = service_status {
-                let status = String::from_utf8_lossy(&output.stdout).trim().to_lowercase();
-                if status != "running" {
-                    println!("Starting ZeroTier service...");
-                    let _ = Command::new("powershell")
-                        .args(&["-Command", "Start-Service -Name 'ZeroTierOneService'"])
-                        .status();
-                    thread::sleep(Duration::from_secs(3));
+        println!("[-] ZeroTier service is not running");
+    }
+}
+
+fn check_ssh_status() {
+    println!("
+=== SSH Status ===");
+    
+    if is_ssh_running() {
+        println!("[+] SSH service is running");
+        println!("    Connect with: ssh rental@<zerotier_ip>");
+        println!("    Root access: ssh root@<zerotier_ip>");
+    } else {
+        println!("[-] SSH service is not running");
+    }
+}
+
+fn check_gpu_access() {
+    println!("
+=== GPU Status ===");
+    
+    // Check for NVIDIA GPU
+    if let Ok(output) = Command::new("nvidia-smi").output() {
+        if output.status.success() {
+            println!("[+] NVIDIA GPU detected");
+            let gpu_info = String::from_utf8_lossy(&output.stdout);
+            // Extract GPU name from nvidia-smi output
+            for line in gpu_info.lines() {
+                if line.contains("GeForce") || line.contains("RTX") || line.contains("GTX") || line.contains("Tesla") {
+                    println!("    {}", line.trim());
+                    break;
+                }
+            }
+        } else {
+            println!("[-] No NVIDIA GPU detected or driver not available");
+        }
+    } else {
+        println!("[-] nvidia-smi not available");
+    }
+    
+    // Check CUDA
+    if let Ok(output) = Command::new("nvcc").arg("--version").output() {
+        if output.status.success() {
+            let cuda_info = String::from_utf8_lossy(&output.stdout);
+            for line in cuda_info.lines() {
+                if line.contains("release") {
+                    println!("[+] CUDA: {}", line.trim());
+                    break;
                 }
             }
         }
     }
+}
 
-    // Step 2: Join the ZeroTier network
-    join_network(network_id);
-
-    // Step 3: Get ZeroTier IP
-    if let Some(ip) = get_zt_ip() {
-        println!("ZeroTier IP: {}", ip);
-    } else {
-        println!("Failed to get ZeroTier IP. Make sure the node is authorized in your network.");
+fn display_container_info() {
+    println!("
+=== Container Information ===");
+    
+    // Display environment variables
+    if let Ok(network_id) = env::var("ZEROTIER_NETWORK_ID") {
+        println!("ZeroTier Network ID: {}", network_id);
     }
+    
+    // Display workspace info
+    println!("Workspace: /workspace");
+    println!("Shared folder: /workspace/shared");
+    println!("Data folder: /workspace/data");
+    
+    // Display available tools
+    println!("
+Available Tools:");
+    let tools = vec!["python3", "pip3", "node", "npm", "git", "vim", "nano", "htop"];
+    for tool in tools {
+        if Command::new("which").arg(tool).output().map(|o| o.status.success()).unwrap_or(false) {
+            println!("  ✓ {}", tool);
+        }
+    }
+}
 
-    // Step 4: Start SSH server (Windows & Linux support)
-    start_ssh_server();
+fn is_zerotier_running() -> bool {
+    Command::new("pgrep")
+        .arg("zerotier-one")
+        .output()
+        .map(|output| output.status.success())
+        .unwrap_or(false)
+}
+
+fn is_ssh_running() -> bool {
+    Command::new("pgrep")
+        .arg("sshd")
+        .output()
+        .map(|output| output.status.success())
+        .unwrap_or(false)
+}
+
+fn restart_zerotier() {
+    let _ = Command::new("zerotier-one").arg("-d").status();
+    thread::sleep(Duration::from_secs(3));
+    
+    if let Ok(network_id) = env::var("ZEROTIER_NETWORK_ID") {
+        let _ = Command::new("zerotier-cli").args(&["join", &network_id]).status();
+    }
+}
+
+fn restart_ssh() {
+    let _ = Command::new("service").args(&["ssh", "restart"]).status();
 }
 
 // Restart the application

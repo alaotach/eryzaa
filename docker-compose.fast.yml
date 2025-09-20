@@ -1,0 +1,30 @@
+services:
+  rental-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile.fast
+    container_name: rental-dev
+    environment:
+      - ZEROTIER_NETWORK_ID=363c67c55ad2489d
+    volumes:
+      # Mount source code for live editing
+      - ./rental:/workspace/rental
+      - ./client:/workspace/client
+      - ./workspace:/workspace/data
+    ports:
+      - "127.0.0.1:2222:22"
+    privileged: true
+    cap_add:
+      - NET_ADMIN
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    restart: unless-stopped
+    networks:
+      - dev-network
+
+volumes:
+  dev-data:
+
+networks:
+  dev-network:
+    driver: bridge
