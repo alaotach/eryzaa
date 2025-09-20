@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eryzaa - Decentralized Computing Platform</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            text-align: center;
+            color: white;
+            margin-bottom: 50px;
+            padding: 40px 0;
+        }
+        
+        .logo {
+            font-size: 4rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .tagline {
+            font-size: 1.5rem;
+            opacity: 0.9;
+            margin-bottom: 20px;
+        }
+        
+        .subtitle {
+            font-size: 1.1rem;
+            opacity: 0.8;
+        }
+        
+        .hero-stats {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+        
+        .stat {
+            text-align: center;
+        }
+        
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            display: block;
+        }
+        
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+        
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 30px;
+            margin-bottom: 50px;
+        }
+        
+        .feature-card {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            text-align: center;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 25px 50px rgba(0,0,0,0.15);
+        }
+        
+        .feature-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            display: block;
+        }
+        
+        .feature-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #2d3748;
+        }
+        
+        .feature-description {
+            color: #4a5568;
+            line-height: 1.6;
+        }
+        
+        .downloads {
+            background: white;
+            padding: 50px;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+        
+        .downloads h2 {
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+            color: #2d3748;
+        }
+        
+        .downloads-subtitle {
+            text-align: center;
+            color: #4a5568;
+            font-size: 1.1rem;
+            margin-bottom: 40px;
+        }
+        
+        .download-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+            margin-top: 30px;
+        }
+        
+        .download-card {
+            background: #f8f9fa;
+            padding: 30px;
+            border-radius: 15px;
+            border: 2px solid #e9ecef;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+        
+        .download-card:hover {
+            border-color: #667eea;
+            background: #f1f3ff;
+            transform: translateY(-5px);
+        }
+        
+        .download-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+        }
+        
+        .download-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #2d3748;
+        }
+        
+        .download-description {
+            color: #4a5568;
+            margin-bottom: 20px;
+            font-size: 0.9rem;
+        }
+        
+        .download-btn {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 30px;
+            text-decoration: none;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+        }
+        
+        .download-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        }
+        
+        .download-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .info-section {
+            background: white;
+            padding: 50px;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+        
+        .info-section h2 {
+            font-size: 2rem;
+            margin-bottom: 25px;
+            color: #2d3748;
+        }
+        
+        .info-section h3 {
+            font-size: 1.3rem;
+            margin: 25px 0 15px 0;
+            color: #2d3748;
+        }
+        
+        .code-block {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 20px;
+            border-radius: 10px;
+            font-family: 'Monaco', 'Consolas', 'Liberation Mono', monospace;
+            margin: 15px 0;
+            overflow-x: auto;
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+        
+        .blockchain-info {
+            background: linear-gradient(135deg, #f1f3ff 0%, #e8f2ff 100%);
+            padding: 25px;
+            border-radius: 15px;
+            margin-top: 25px;
+            border-left: 5px solid #667eea;
+        }
+        
+        .network-info {
+            background: linear-gradient(135deg, #f0fff4 0%, #e6fffa 100%);
+            padding: 25px;
+            border-radius: 15px;
+            margin-top: 25px;
+            border-left: 5px solid #38a169;
+        }
+        
+        .steps-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin-top: 30px;
+        }
+        
+        .step-card {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 15px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .step-number {
+            background: #667eea;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+        
+        footer {
+            text-align: center;
+            color: white;
+            margin-top: 50px;
+            padding: 40px 20px;
+            opacity: 0.9;
+        }
+        
+        .footer-links {
+            margin-top: 20px;
+        }
+        
+        .footer-links a {
+            color: white;
+            text-decoration: none;
+            margin: 0 15px;
+            opacity: 0.8;
+            transition: opacity 0.3s ease;
+        }
+        
+        .footer-links a:hover {
+            opacity: 1;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .logo {
+                font-size: 3rem;
+            }
+            
+            .tagline {
+                font-size: 1.2rem;
+            }
+            
+            .hero-stats {
+                gap: 20px;
+            }
+            
+            .downloads, .info-section {
+                padding: 30px 20px;
+            }
+            
+            .feature-card {
+                padding: 30px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">🚀 Eryzaa</div>
+            <div class="tagline">Decentralized Computing Platform</div>
+            <div class="subtitle">Rent & Share Computing Resources Globally</div>
+            
+            <div class="hero-stats">
+                <div class="stat">
+                    <span class="stat-number">3</span>
+                    <span class="stat-label">Access Types</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-number">∞</span>
+                    <span class="stat-label">Global Reach</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-number">24/7</span>
+                    <span class="stat-label">Availability</span>
+                </div>
+            </div>
+        </header>
+        
+        <div class="features">
+            <div class="feature-card">
+                <span class="feature-icon">💻</span>
+                <h3 class="feature-title">Direct SSH Access</h3>
+                <p class="feature-description">
+                    Secure remote terminal access to rental servers via ZeroTier VPN. 
+                    Perfect for development, system administration, and direct control.
+                </p>
+            </div>
+            
+            <div class="feature-card">
+                <span class="feature-icon">🤖</span>
+                <h3 class="feature-title">AI Model Training</h3>
+                <p class="feature-description">
+                    Deploy and train ML models using Docker containers. Full support for 
+                    PyTorch, TensorFlow, and custom frameworks with dataset management.
+                </p>
+            </div>
+            
+            <div class="feature-card">
+                <span class="feature-icon">⚡</span>
+                <h3 class="feature-title">Edge Computing</h3>
+                <p class="feature-description">
+                    Distribute compute jobs across multiple GPU nodes with automatic 
+                    load balancing, real-time monitoring, and scalable processing.
+                </p>
+            </div>
+        </div>
+        
+        <div class="downloads">
+            <h2>📥 Download Eryzaa</h2>
+            <p class="downloads-subtitle">
+                Choose your platform and start sharing or accessing computing resources
+            </p>
+            
+            <div class="download-grid">
+                <div class="download-card">
+                    <div class="download-icon">🐧</div>
+                    <h4 class="download-title">Linux x64</h4>
+                    <p class="download-description">
+                        Full automatic installation with Docker and ZeroTier support
+                    </p>
+                    <a href="dist/eryzaa-x86_64-unknown-linux-gnu.tar.gz" class="download-btn">
+                        Download for Linux
+                    </a>
+                </div>
+                
+                <div class="download-card">
+                    <div class="download-icon">🪟</div>
+                    <h4 class="download-title">Windows x64</h4>
+                    <p class="download-description">
+                        Manual Docker Desktop and ZeroTier installation required
+                    </p>
+                    <button class="download-btn" disabled>
+                        Coming Soon
+                    </button>
+                </div>
+                
+                <div class="download-card">
+                    <div class="download-icon">🍎</div>
+                    <h4 class="download-title">macOS</h4>
+                    <p class="download-description">
+                        Support for Intel and Apple Silicon processors
+                    </p>
+                    <button class="download-btn" disabled>
+                        Coming Soon
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="info-section">
+            <h2>🔧 Quick Setup</h2>
+            
+            <div class="steps-grid">
+                <div class="step-card">
+                    <div class="step-number">1</div>
+                    <h3>Extract & Install</h3>
+                    <div class="code-block">tar -xzf eryzaa-*.tar.gz
+cd x86_64-unknown-linux-gnu/
+sudo ./install.sh</div>
+                </div>
+                
+                <div class="step-card">
+                    <div class="step-number">2</div>
+                    <h3>Start Rental Server</h3>
+                    <div class="code-block">./eryzaa-rental</div>
+                    <p>Configure your hourly rate and share your ZeroTier IP</p>
+                </div>
+                
+                <div class="step-card">
+                    <div class="step-number">3</div>
+                    <h3>Connect as Client</h3>
+                    <div class="code-block">./eryzaa-client</div>
+                    <p>Access rental servers via SSH, AI training, or edge computing</p>
+                </div>
+            </div>
+            
+            <div class="network-info">
+                <h3>🌐 Network Information</h3>
+                <ul>
+                    <li><strong>ZeroTier Network:</strong> <code>363c67c55ad2489d</code></li>
+                    <li><strong>Join Command:</strong> <code>sudo zerotier-cli join 363c67c55ad2489d</code></li>
+                    <li><strong>Check Status:</strong> <code>zerotier-cli listnetworks</code></li>
+                    <li><strong>Encryption:</strong> End-to-end encrypted P2P connections</li>
+                </ul>
+            </div>
+            
+            <div class="blockchain-info">
+                <h3>💰 Blockchain Features</h3>
+                <ul>
+                    <li><strong>EryzaaToken (ERZC):</strong> ERC-20 token for payments</li>
+                    <li><strong>Smart Contracts:</strong> Automated escrow and billing</li>
+                    <li><strong>Network:</strong> Avalanche Fuji testnet</li>
+                    <li><strong>Staking:</strong> Stake tokens for better rental rates</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="info-section">
+            <h2>🌟 Platform Highlights</h2>
+            
+            <div class="steps-grid">
+                <div class="step-card">
+                    <h3>🔒 Security First</h3>
+                    <ul>
+                        <li>ZeroTier VPN encryption</li>
+                        <li>Smart contract escrow</li>
+                        <li>Docker container isolation</li>
+                        <li>SSH key authentication</li>
+                    </ul>
+                </div>
+                
+                <div class="step-card">
+                    <h3>💸 Fair Economics</h3>
+                    <ul>
+                        <li>Hourly billing automation</li>
+                        <li>Token-based payments</li>
+                        <li>Staking rewards</li>
+                        <li>Decentralized marketplace</li>
+                    </ul>
+                </div>
+                
+                <div class="step-card">
+                    <h3>🚀 Easy to Use</h3>
+                    <ul>
+                        <li>One-click server setup</li>
+                        <li>Intuitive GUI applications</li>
+                        <li>Automatic network joining</li>
+                        <li>Cross-platform support</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <footer>
+            <p><strong>Eryzaa</strong> - Democratizing Computing Resources Worldwide</p>
+            <p>Built with Rust 🦀 | Docker 🐳 | Avalanche ⚡</p>
+            
+            <div class="footer-links">
+                <a href="#download">Download</a>
+                <a href="https://github.com/alaotach/eryzaa">GitHub</a>
+                <a href="#docs">Documentation</a>
+                <a href="#support">Support</a>
+            </div>
+            
+            <p style="margin-top: 20px; font-size: 0.9rem; opacity: 0.7;">
+                ZeroTier Network: 363c67c55ad2489d | Avalanche Fuji Testnet
+            </p>
+        </footer>
+    </div>
+</body>
+</html>

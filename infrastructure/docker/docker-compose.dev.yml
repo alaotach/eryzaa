@@ -1,0 +1,85 @@
+services:
+  rental-server-dev:
+    build: 
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: rental-server-dev
+    hostname: rental-server-dev
+    environment:
+      - ZEROTIER_NETWORK_ID=363c67c55ad2489d
+      # - NVIDIA_VISIBLE_DEVICES=all
+      # - NVIDIA_DRIVER_CAPABILITIES=compute,utility,graphics
+      - RUST_LOG=debug
+      - DEV_MODE=true
+    volumes:
+      # Live code mounting for development
+      - ./rental/src:/workspace/rental/src:rw
+      - ./client/src:/workspace/client/src:rw
+      - ./rental/Cargo.toml:/workspace/rental/Cargo.toml:rw
+      - ./client/Cargo.toml:/workspace/client/Cargo.toml:rw
+      # Development workspace
+      - ./workspace:/workspace/data:rw
+      - ${HOME}/shared:/workspace/shared:rw
+      # ZeroTier config for persistence
+      - zerotier-data:/var/lib/zerotier-one
+      # Cargo cache for faster builds
+      - cargo-cache:/usr/local/cargo/registry
+      - cargo-target:/workspace/rental/target
+    ports:
+      # SSH access
+      - "127.0.0.1:2222:22"
+      # Development ports
+      - "127.0.0.1:8080:8080"
+      - "127.0.0.1:3000:3000"
+    privileged: true
+    cap_add:
+      - NET_ADMIN
+      - SYS_ADMIN
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    # GPU support disabled for development - uncomment when needed
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: all
+    #           capabilities: [gpu]
+    restart: unless-stopped
+    security_opt:
+      - seccomp:unconfined
+    networks:
+      - rental-network
+    # Keep container running for development
+    tty: true
+    stdin_open: true
+
+  # Optional: Web-based monitoring and management
+  portainer:
+    image: portainer/portainer-ce:latest
+    container_name: rental-portainer
+    ports:
+      - "127.0.0.1:9000:9000"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - portainer-data:/data
+    restart: unless-stopped
+    networks:
+      - rental-network
+
+volumes:
+  zerotier-data:
+    driver: local
+  portainer-data:
+    driver: local
+  cargo-cache:
+    driver: local
+  cargo-target:
+    driver: local
+
+networks:
+  rental-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16

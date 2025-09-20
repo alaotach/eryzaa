@@ -1,0 +1,119 @@
+version: '3.8'
+
+services:
+  # Model Training Service
+  model-trainer:
+    build:
+      context: ../..
+      dockerfile: infrastructure/docker/Dockerfile.training
+    volumes:
+      - ./datasets:/datasets
+      - ./models:/models
+      - ./training:/training
+    environment:
+      - CUDA_VISIBLE_DEVICES=0,1,2,3
+      - PYTHONPATH=/workspace
+    ports:
+      - "8888:8888"  # Jupyter
+      - "6006:6006"  # TensorBoard
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+
+  # Model Inference API
+  model-inference:
+    build:
+      context: ../..
+      dockerfile: infrastructure/docker/Dockerfile.inference
+    volumes:
+      - ./models:/models:ro
+    environment:
+      - MODEL_PATH=/models
+      - API_PORT=8000
+    ports:
+      - "8000:8000"
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+
+  # Dataset Management Service
+  dataset-manager:
+    build:
+      context: ../..
+      dockerfile: infrastructure/docker/Dockerfile.datasets
+    volumes:
+      - ./datasets:/datasets
+      - ./preprocessing:/preprocessing
+    ports:
+      - "8001:8001"
+    environment:
+      - DATASET_ROOT=/datasets
+      - API_PORT=8001
+
+  # Model Registry & Versioning
+  model-registry:
+    image: postgres:15
+    environment:
+      - POSTGRES_DB=model_registry
+      - POSTGRES_USER=eryzaa
+      - POSTGRES_PASSWORD=secure_password
+    volumes:
+      - model_registry_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  # MLflow Tracking Server
+  mlflow-server:
+    image: python:3.9-slim
+    command: >
+      bash -c "pip install mlflow psycopg2-binary &&
+               mlflow server --host 0.0.0.0 --port 5000 
+               --backend-store-uri postgresql://eryzaa:secure_password@model-registry:5432/model_registry
+               --default-artifact-root /mlflow/artifacts"
+    volumes:
+      - mlflow_artifacts:/mlflow/artifacts
+    ports:
+      - "5000:5000"
+    depends_on:
+      - model-registry
+
+  # Redis for caching and job queues
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+
+  # Celery worker for background tasks
+  celery-worker:
+    build:
+      context: ../..
+      dockerfile: infrastructure/docker/Dockerfile.training
+    command: celery -A eryzaa.tasks worker --loglevel=info
+    volumes:
+      - ./datasets:/datasets
+      - ./models:/models
+      - ./training:/training
+    environment:
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+    depends_on:
+      - redis
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+
+volumes:
+  model_registry_data:
+  mlflow_artifacts:

@@ -1,0 +1,23 @@
+# Text Classification with BERT
+model:
+  type: "bert"
+  pretrained: "bert-base-uncased"
+  num_classes: 2
+
+dataset:
+  type: "text"
+  path: "/datasets/imdb"
+  max_length: 512
+  
+training:
+  epochs: 5
+  batch_size: 16
+  learning_rate: 2e-5
+  optimizer: "adamw"
+  weight_decay: 0.01
+  loss: "crossentropy"
+
+output_dir: "/models/bert_sentiment"
+use_wandb: true
+use_mlflow: true
+project_name: "eryzaa-nlp"

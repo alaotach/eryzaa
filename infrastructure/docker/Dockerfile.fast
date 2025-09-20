@@ -1,0 +1,30 @@
+# Super fast development Dockerfile
+FROM ubuntu:22.04
+
+# Essential environment
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Install minimal packages in one layer
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl openssh-server sudo ca-certificates gnupg \
+    && rm -rf /var/lib/apt/lists/* \
+    && curl -s https://install.zerotier.com | bash \
+    && mkdir /var/run/sshd \
+    && useradd -m rental \
+    && echo 'root:rental_access_2024' | chpasswd \
+    && echo 'rental:rental_user_2024' | chpasswd \
+    && usermod -aG sudo rental \
+    && echo 'PermitRootLogin yes' >> /etc/ssh/sshd_config \
+    && echo 'PasswordAuthentication yes' >> /etc/ssh/sshd_config
+
+# Simple entrypoint
+RUN echo '#!/bin/bash\n\
+zerotier-one -d\n\
+sleep 2\n\
+[ ! -z "$ZEROTIER_NETWORK_ID" ] && zerotier-cli join $ZEROTIER_NETWORK_ID\n\
+service ssh start\n\
+echo "Container ready!"\n\
+tail -f /dev/null' > /start.sh && chmod +x /start.sh
+
+EXPOSE 22
+CMD ["/start.sh"]

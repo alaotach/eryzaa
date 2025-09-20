@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eryzaa - Decentralized Computing Platform</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            text-align: center;
+            color: white;
+            margin-bottom: 50px;
+        }
+        
+        h1 {
+            font-size: 3rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+        
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-bottom: 50px;
+        }
+        
+        .feature-card {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .feature-icon {
+            font-size: 3rem;
+            margin-bottom: 20px;
+        }
+        
+        .downloads {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+        
+        .download-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+        
+        .download-card {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            border: 2px solid #e9ecef;
+            transition: all 0.3s ease;
+        }
+        
+        .download-card:hover {
+            border-color: #667eea;
+            background: #f1f3ff;
+        }
+        
+        .download-btn {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 25px;
+            text-decoration: none;
+            border-radius: 25px;
+            font-weight: bold;
+            margin-top: 15px;
+            transition: transform 0.3s ease;
+        }
+        
+        .download-btn:hover {
+            transform: scale(1.05);
+        }
+        
+        .info-section {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        
+        .blockchain-info {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .code {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            margin: 10px 0;
+            overflow-x: auto;
+        }
+        
+        footer {
+            text-align: center;
+            color: white;
+            margin-top: 50px;
+            padding: 20px;
+            opacity: 0.8;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🚀 Eryzaa</h1>
+            <p class="subtitle">Decentralized Computing Resource Sharing Platform</p>
+        </header>
+        
+        <div class="features">
+            <div class="feature-card">
+                <div class="feature-icon">💻</div>
+                <h3>Direct SSH Access</h3>
+                <p>Secure remote terminal access to rental servers via ZeroTier VPN. Perfect for development and system administration.</p>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">🤖</div>
+                <h3>AI Model Training</h3>
+                <p>Deploy and train ML models using Docker containers. Support for PyTorch, TensorFlow, and custom frameworks.</p>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">⚡</div>
+                <h3>Edge Computing</h3>
+                <p>Distribute compute jobs across multiple GPU nodes with automatic load balancing and real-time monitoring.</p>
+            </div>
+        </div>
+        
+        <div class="downloads">
+            <h2>📥 Download Eryzaa</h2>
+            <p>Choose your platform and start sharing or accessing computing resources:</p>
+            
+            <div class="download-grid">
+                <div class="download-card">
+                    <h4>🐧 Linux (x64)</h4>
+                    <p>Full automatic installation with Docker and ZeroTier</p>
+                    <a href="dist/eryzaa-x86_64-unknown-linux-gnu.tar.gz" class="download-btn">Download Linux</a>
+                </div>
+                
+                <div class="download-card">
+                    <h4>🪟 Windows (x64)</h4>
+                    <p>Manual Docker Desktop and ZeroTier installation required</p>
+                    <a href="#" class="download-btn" style="opacity: 0.6;">Coming Soon</a>
+                </div>
+                
+                <div class="download-card">
+                    <h4>🍎 macOS</h4>
+                    <p>Manual Docker Desktop and ZeroTier installation required</p>
+                    <a href="#" class="download-btn" style="opacity: 0.6;">Coming Soon</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="info-section">
+            <h2>🔧 Quick Setup</h2>
+            
+            <h3>For Renters (Share Your Computer)</h3>
+            <div class="code">
+# Extract and install
+tar -xzf eryzaa-x86_64-unknown-linux-gnu.tar.gz
+cd x86_64-unknown-linux-gnu/
+sudo ./install.sh
+
+# Start rental server
+./eryzaa-rental</div>
+            
+            <h3>For Clients (Access Rental Computers)</h3>
+            <div class="code">
+# Run the client
+./eryzaa-client
+
+# Or use CLI
+./eryzaa-cli --help</div>
+            
+            <div class="blockchain-info">
+                <h3>💰 Blockchain Integration</h3>
+                <ul>
+                    <li><strong>EryzaaToken (ERZC):</strong> ERC-20 token for payments</li>
+                    <li><strong>Smart Contracts:</strong> Automated escrow and billing</li>
+                    <li><strong>Network:</strong> Avalanche Fuji testnet</li>
+                    <li><strong>ZeroTier:</strong> Network ID <code>363c67c55ad2489d</code></li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="info-section" style="margin-top: 30px;">
+            <h2>🌐 How It Works</h2>
+            
+            <h3>1. Network Setup</h3>
+            <p>All devices join the secure ZeroTier network (363c67c55ad2489d) for encrypted peer-to-peer connections.</p>
+            
+            <h3>2. Resource Sharing</h3>
+            <p>Renters configure their computers with available resources (CPU, GPU, RAM) and hourly rates.</p>
+            
+            <h3>3. Smart Contracts</h3>
+            <p>Payments are handled automatically via Avalanche smart contracts with escrow protection.</p>
+            
+            <h3>4. Access Types</h3>
+            <ul>
+                <li><strong>SSH:</strong> Direct terminal access for development and administration</li>
+                <li><strong>AI Training:</strong> Deploy ML models and training pipelines in Docker containers</li>
+                <li><strong>Edge Computing:</strong> Distribute compute jobs across multiple GPU nodes</li>
+            </ul>
+        </div>
+        
+        <footer>
+            <p>Eryzaa - Democratizing Computing Resources | Built with Rust, Docker, and Avalanche</p>
+            <p>Join our ZeroTier network: <code>363c67c55ad2489d</code></p>
+        </footer>
+    </div>
+</body>
+</html>

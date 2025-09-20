@@ -1,0 +1,23 @@
+# Example training configurations for different model types
+
+# Image Classification with ResNet
+model:
+  type: "resnet"
+  pretrained: true
+  num_classes: 10
+
+dataset:
+  type: "imagenet"
+  path: "/datasets/cifar10"
+  
+training:
+  epochs: 100
+  batch_size: 32
+  learning_rate: 0.001
+  optimizer: "adam"
+  loss: "crossentropy"
+
+output_dir: "/models/resnet_cifar10"
+use_wandb: true
+use_mlflow: true
+project_name: "eryzaa-image-classification"
