@@ -94,3 +94,4 @@ cross/
 
 # Git line ending configuration
 .gitattributes
+node_modules

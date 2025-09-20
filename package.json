@@ -1,0 +1,46 @@
+{
+  "name": "eryza-smart-contracts",
+  "version": "1.0.0",
+  "description": "Eryza smart contracts on Avalanche",
+  "main": "index.js",
+  "scripts": {
+    "test": "hardhat test",
+    "compile": "hardhat compile",
+    "deploy:fuji": "hardhat deploy --config hardhat.config.cjs --network fuji",
+    "deploy:mainnet": "hardhat deploy --config hardhat.config.cjs --network avalanche",
+    "setup:contracts": "node scripts/scripts_setup-contracts.js",
+    "verify:fuji": "hardhat verify --network fuji",
+    "verify:mainnet": "hardhat verify --network avalanche",
+    "clean": "hardhat clean",
+    "size": "hardhat size-contracts",
+    "coverage": "hardhat coverage",
+    "interact": "node scripts/contract-interactions.cjs",
+    "chainkit": "node scripts/chainkit-examples.cjs",
+    "monitor": "node scripts/monitor.cjs"
+  },
+  "keywords": [
+    "avalanche",
+    "smart-contracts",
+    "defi",
+    "compute",
+    "escrow"
+  ],
+  "author": "Eryza Team",
+  "license": "MIT",
+  "dependencies": {
+    "@avalanche-sdk/chainkit": "^0.3.0-alpha.1",
+    "@avalanche-sdk/client": "^0.0.4-alpha.14",
+    "@avalanche-sdk/interchain": "^0.1.1-alpha.0",
+    "@nomicfoundation/hardhat-toolbox": "^6.1.0",
+    "@nomicfoundation/solidity-analyzer-linux-x64-gnu": "^0.1.2",
+    "@nomiclabs/hardhat-etherscan": "^3.1.8",
+    "@openzeppelin/contracts": "^5.4.0",
+    "dotenv": "^17.2.2",
+    "ethers": "^6.15.0",
+    "hardhat-deploy": "^1.0.4",
+    "hardhat-ethers": "^1.0.1",
+    "hardhat-gas-reporter": "^2.3.0",
+    "viem": "^2.37.7"
+  },
+  "type": "module"
+}
