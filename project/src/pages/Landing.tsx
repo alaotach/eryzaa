@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowRight, Zap, Shield, Users, Download, Terminal, Brain, Cpu } from 'lucide-react';
+import { ArrowRight, Zap, Download, Terminal, Brain, Cpu } from 'lucide-react';
 import ParticleBackground from '../components/UI/ParticleBackground';
 import Button from '../components/UI/Button';
 import Card from '../components/UI/Card';
@@ -106,26 +106,21 @@ const Landing: React.FC = () => {
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button 
-              as="a"
+            <a
               href="#downloads"
-              size="lg"
-              className="text-lg px-8 py-4"
+              className="inline-flex items-center justify-center bg-neon-blue text-white hover:bg-blue-600 transition-colors rounded-lg text-lg px-8 py-4 font-medium"
             >
               Download Now
               <Download size={20} className="ml-2" />
-            </Button>
+            </a>
             
-            <Button 
-              variant="outline" 
-              size="lg"
-              as={Link}
+            <Link
               to="/login"
-              className="text-lg px-8 py-4 border-white text-white hover:bg-white hover:text-dark-bg"
+              className="inline-flex items-center justify-center border border-white text-white hover:bg-white hover:text-dark-bg transition-colors rounded-lg text-lg px-8 py-4 font-medium"
             >
               Launch Dashboard
               <ArrowRight size={20} className="ml-2" />
-            </Button>
+            </Link>
           </div>
         </motion.div>
       </section>
@@ -183,15 +178,14 @@ const Landing: React.FC = () => {
                   <p className="text-gray-300 mb-6">{download.description}</p>
                   
                   {download.available ? (
-                    <Button 
-                      as="a" 
+                    <a
                       href={`/${download.filename}`}
                       download
-                      className="bg-neon-blue text-white hover:bg-blue-600"
+                      className="inline-flex items-center justify-center bg-neon-blue text-white hover:bg-blue-600 transition-colors rounded-lg px-4 py-2 font-medium"
                     >
                       Download
                       <Download size={16} className="ml-2" />
-                    </Button>
+                    </a>
                   ) : (
                     <Button disabled className="opacity-50 cursor-not-allowed">
                       Coming Soon
@@ -235,10 +229,13 @@ const Landing: React.FC = () => {
                   <h3 className="text-2xl font-bold mb-4">{feature.title}</h3>
                   <p className="text-gray-300 mb-6">{feature.description}</p>
                   
-                  <Button as={Link} to={feature.link} variant="outline" className="border-neon-blue text-neon-blue hover:bg-neon-blue hover:text-white">
+                  <Link 
+                    to={feature.link}
+                    className="inline-flex items-center justify-center border border-neon-blue text-neon-blue hover:bg-neon-blue hover:text-white transition-colors rounded-lg px-4 py-2 font-medium"
+                  >
                     Learn More
                     <ArrowRight size={16} className="ml-2" />
-                  </Button>
+                  </Link>
                 </Card>
               </motion.div>
             ))}
@@ -301,24 +298,19 @@ const Landing: React.FC = () => {
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button 
-              as="a" 
+            <a
               href="#downloads"
-              size="lg"
-              className="text-lg px-12 py-4 animate-pulse-neon"
+              className="inline-flex items-center justify-center bg-neon-blue text-white hover:bg-blue-600 transition-colors rounded-lg text-lg px-12 py-4 font-medium animate-pulse-neon"
             >
               Download Eryzaa
-            </Button>
+            </a>
             
-            <Button 
-              as={Link} 
+            <Link
               to="/login"
-              variant="outline"
-              size="lg"
-              className="text-lg px-12 py-4 border-white text-white hover:bg-white hover:text-dark-bg"
+              className="inline-flex items-center justify-center border border-white text-white hover:bg-white hover:text-dark-bg transition-colors rounded-lg text-lg px-12 py-4 font-medium"
             >
               View Dashboard
-            </Button>
+            </Link>
           </div>
         </motion.div>
       </section>

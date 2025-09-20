@@ -1,0 +1,63 @@
+services:
+  rental-server:
+    build: .
+    container_name: rental-server
+    hostname: rental-server
+    environment:
+      - ZEROTIER_NETWORK_ID=363c67c55ad2489d
+      - NVIDIA_VISIBLE_DEVICES=all
+      - NVIDIA_DRIVER_CAPABILITIES=compute,utility,graphics
+    volumes:
+      # Mount workspace for persistent storage
+      - ./workspace:/workspace/data
+      # Mount host's home directory (optional, for file sharing)
+      - ${HOME}/shared:/workspace/shared
+      # Mount ZeroTier config for persistence
+      - zerotier-data:/var/lib/zerotier-one
+    ports:
+      # Only expose SSH port to localhost for security
+      - "127.0.0.1:2222:22"
+    privileged: true
+    cap_add:
+      - NET_ADMIN
+      - SYS_ADMIN
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    restart: unless-stopped
+    security_opt:
+      - seccomp:unconfined
+    networks:
+      - rental-network
+
+  # Optional: Web-based monitoring and management
+  portainer:
+    image: portainer/portainer-ce:latest
+    container_name: rental-portainer
+    ports:
+      - "127.0.0.1:9000:9000"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - portainer-data:/data
+    restart: unless-stopped
+    networks:
+      - rental-network
+
+volumes:
+  zerotier-data:
+    driver: local
+  portainer-data:
+    driver: local
+
+networks:
+  rental-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
