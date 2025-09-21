@@ -4,12 +4,29 @@ use std::sync::{Arc, Mutex};
 use std::thread;
 use std::time::{Duration, SystemTime};
 use sysinfo::System;
+use eryzaa_discovery::{
+    DiscoveryService, NodeAdvertisement, NodeCapabilities, NodeStatus, NodeType,
+    create_rental_advertisement,
+};
+use eryzaa_ssh_manager::{SshManager, JobAccess};
+use uuid::Uuid;
 
 pub struct EryzaaRentalApp {
     // System state
     system: Arc<Mutex<System>>,
     setup_status: Arc<Mutex<SetupStatus>>,
     server_info: Arc<Mutex<ServerInfo>>,
+    
+    // Discovery service
+    discovery_service: Option<Arc<Mutex<DiscoveryService>>>,
+    node_id: String,
+    connected_clients: Arc<Mutex<Vec<NodeAdvertisement>>>,
+    
+    // SSH management
+    ssh_manager: Arc<SshManager>,
+    
+    // Rental state
+    is_renting_active: bool,
     
     // UI state
     selected_tab: Tab,
@@ -32,6 +49,11 @@ impl Default for EryzaaRentalApp {
             system: Arc::new(Mutex::new(System::new_all())),
             setup_status: Arc::new(Mutex::new(SetupStatus::default())),
             server_info: Arc::new(Mutex::new(ServerInfo::default())),
+            discovery_service: None,
+            node_id: Uuid::new_v4().to_string(),
+            connected_clients: Arc::new(Mutex::new(Vec::new())),
+            ssh_manager: Arc::new(SshManager::new()),
+            is_renting_active: false,
             selected_tab: Tab::default(),
             show_setup_wizard: false,
             setup_step: 0,
@@ -83,6 +105,8 @@ pub enum Tab {
     Setup,
     System,
     Network,
+    Clients,
+    SshUsers,
     Settings,
 }
 
@@ -140,10 +164,171 @@ impl EryzaaRentalApp {
     pub fn new(_cc: &eframe::CreationContext<'_>) -> Self {
         let system = Arc::new(Mutex::new(System::new_all()));
         
-        Self {
+        let mut app = Self {
             system,
             last_update: SystemTime::now(),
             ..Default::default()
+        };
+        
+        // Initialize discovery service
+        app.initialize_discovery_service();
+        
+        app
+    }
+    
+    fn initialize_discovery_service(&mut self) {
+        // Get system capabilities
+        let sys = self.system.lock().unwrap();
+        let capabilities = NodeCapabilities {
+            cpu_cores: sys.cpus().len() as u32,
+            memory_gb: (sys.total_memory() / 1_073_741_824) as u32,
+            gpu_count: self.detect_gpu_count(),
+            gpu_memory_gb: self.detect_gpu_memory(),
+            disk_space_gb: 1000, // Placeholder - would need proper disk detection
+            network_speed_mbps: 1000, // Placeholder
+            supports_docker: self.check_docker_support(),
+            supports_gpu: self.detect_gpu_count() > 0,
+            max_concurrent_jobs: 4,
+        };
+        drop(sys);
+        
+        // Get network information
+        let (local_ip, zerotier_ip) = self.get_network_info();
+        
+        // Create node advertisement
+        let advertisement = create_rental_advertisement(
+            self.node_id.clone(),
+            local_ip,
+            zerotier_ip,
+            capabilities,
+            "363c67c55ad2489d".to_string(), // Default ZeroTier network
+        );
+        
+        // Initialize discovery service
+        match DiscoveryService::new(advertisement) {
+            Ok(service) => {
+                let service_arc = Arc::new(Mutex::new(service));
+                
+                // Start the discovery service
+                if let Ok(mut service) = service_arc.lock() {
+                    if service.start().is_ok() {
+                        println!("🌐 Discovery service started - advertising rental node");
+                        println!("📡 Node ID: {}", self.node_id);
+                        self.discovery_service = Some(service_arc);
+                    }
+                } else {
+                    println!("❌ Failed to start discovery service");
+                }
+            }
+            Err(e) => {
+                println!("❌ Failed to initialize discovery service: {}", e);
+            }
+        }
+    }
+    
+    fn detect_gpu_count(&self) -> u32 {
+        // Try to detect GPUs using nvidia-smi
+        if let Ok(output) = Command::new("nvidia-smi").arg("-L").output() {
+            if output.status.success() {
+                let output_str = String::from_utf8_lossy(&output.stdout);
+                return output_str.lines().count() as u32;
+            }
+        }
+        
+        // Try lspci for any GPU detection
+        if let Ok(output) = Command::new("lspci").output() {
+            if output.status.success() {
+                let output_str = String::from_utf8_lossy(&output.stdout);
+                return output_str.lines()
+                    .filter(|line| line.to_lowercase().contains("vga") || 
+                                  line.to_lowercase().contains("3d") ||
+                                  line.to_lowercase().contains("display"))
+                    .count() as u32;
+            }
+        }
+        
+        0
+    }
+    
+    fn detect_gpu_memory(&self) -> u32 {
+        // Try to get GPU memory using nvidia-smi
+        if let Ok(output) = Command::new("nvidia-smi")
+            .args(&["--query-gpu=memory.total", "--format=csv,noheader,nounits"])
+            .output() 
+        {
+            if output.status.success() {
+                let output_str = String::from_utf8_lossy(&output.stdout);
+                if let Ok(memory_mb) = output_str.trim().parse::<u32>() {
+                    return memory_mb / 1024; // Convert MB to GB
+                }
+            }
+        }
+        
+        0
+    }
+    
+    fn check_docker_support(&self) -> bool {
+        Command::new("docker")
+            .arg("--version")
+            .output()
+            .map(|o| o.status.success())
+            .unwrap_or(false)
+    }
+    
+    fn get_network_info(&self) -> (String, Option<String>) {
+        let mut local_ip = "127.0.0.1".to_string();
+        let mut zerotier_ip = None;
+        
+        // Get local IP (try to get non-loopback interface)
+        if let Ok(output) = Command::new("hostname").arg("-I").output() {
+            if output.status.success() {
+                let output_str = String::from_utf8_lossy(&output.stdout);
+                if let Some(ip) = output_str.split_whitespace().next() {
+                    if ip != "127.0.0.1" && !ip.is_empty() {
+                        local_ip = ip.to_string();
+                    }
+                }
+            }
+        }
+        
+        // Get ZeroTier IP
+        if let Ok(output) = Command::new("zerotier-cli").args(&["listnetworks"]).output() {
+            if output.status.success() {
+                let output_str = String::from_utf8_lossy(&output.stdout);
+                for line in output_str.lines() {
+                    if line.contains("363c67c55ad2489d") {
+                        let parts: Vec<&str> = line.split_whitespace().collect();
+                        if parts.len() > 6 {
+                            let ip = parts[6].split('/').next().unwrap_or("");
+                            if !ip.is_empty() && ip != "-" {
+                                zerotier_ip = Some(ip.to_string());
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
+        (local_ip, zerotier_ip)
+    }
+    
+    fn update_discovery_service(&mut self) {
+        if let Some(ref service_arc) = self.discovery_service {
+            if let Ok(mut service) = service_arc.lock() {
+                // Update status based on current state
+                let status = match self.setup_status.lock().unwrap().clone() {
+                    SetupStatus::Running => NodeStatus::Available,
+                    SetupStatus::Installing(_) => NodeStatus::Maintenance,
+                    _ => NodeStatus::Offline,
+                };
+                
+                service.update_status(status);
+                
+                // Get connected clients
+                let clients = service.get_nodes_by_type(NodeType::Client);
+                *self.connected_clients.lock().unwrap() = clients;
+            }
         }
     }
     
@@ -384,7 +569,63 @@ impl EryzaaRentalApp {
                     .map(|o| o.status.success())
                     .unwrap_or(false);
             }
+            
+            drop(server_info);
+            drop(sys);
+            
+            // Update discovery service
+            self.update_discovery_service();
         }
+    }
+    
+    fn start_renting(&mut self) {
+        println!("🚀 Starting rental service...");
+        self.is_renting_active = true;
+        
+        // Initialize discovery service if not already done
+        if self.discovery_service.is_none() {
+            self.initialize_discovery_service();
+        }
+        
+        // Update discovery service to show as available
+        if let Some(ref service_arc) = self.discovery_service {
+            if let Ok(mut service) = service_arc.lock() {
+                service.update_status(NodeStatus::Available);
+            }
+        }
+        
+        println!("✅ Rental service started - PC is now available for SSH access");
+    }
+    
+    fn stop_renting(&mut self) {
+        println!("🛑 Stopping rental service...");
+        self.is_renting_active = false;
+        
+        // Clean up any active SSH users
+        let ssh_manager = self.ssh_manager.clone();
+        let active_jobs = ssh_manager.get_active_jobs();
+        
+        for job in active_jobs {
+            let job_id = job.job_id.clone();
+            let ssh_manager_clone = ssh_manager.clone();
+            
+            tokio::spawn(async move {
+                if let Err(e) = ssh_manager_clone.remove_job_user(&job_id).await {
+                    eprintln!("Failed to remove SSH user for job {}: {}", job_id, e);
+                } else {
+                    println!("Removed SSH user for job: {}", job_id);
+                }
+            });
+        }
+        
+        // Update discovery service to show as offline
+        if let Some(ref service_arc) = self.discovery_service {
+            if let Ok(mut service) = service_arc.lock() {
+                service.update_status(NodeStatus::Offline);
+            }
+        }
+        
+        println!("✅ Rental service stopped - PC is no longer available");
     }
 }
 
@@ -413,6 +654,8 @@ impl eframe::App for EryzaaRentalApp {
                 ui.selectable_value(&mut self.selected_tab, Tab::Setup, "⚙️ Setup");
                 ui.selectable_value(&mut self.selected_tab, Tab::System, "🖥️ System");
                 ui.selectable_value(&mut self.selected_tab, Tab::Network, "🌐 Network");
+                ui.selectable_value(&mut self.selected_tab, Tab::Clients, "👥 Clients");
+                ui.selectable_value(&mut self.selected_tab, Tab::SshUsers, "🔐 SSH Users");
                 ui.selectable_value(&mut self.selected_tab, Tab::Settings, "🔧 Settings");
                 
                 ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
@@ -429,6 +672,8 @@ impl eframe::App for EryzaaRentalApp {
                 Tab::Setup => self.show_setup(ui),
                 Tab::System => self.show_system(ui),
                 Tab::Network => self.show_network(ui),
+                Tab::Clients => self.show_clients(ui),
+                Tab::SshUsers => self.show_ssh_users(ui),
                 Tab::Settings => self.show_settings(ui),
             }
         });
@@ -539,7 +784,110 @@ impl EryzaaRentalApp {
         
         // Server Status
         ui.group(|ui| {
-            ui.heading("Server Status");
+            ui.heading("Rental Server Status");
+            
+            // Main rental toggle
+            ui.horizontal(|ui| {
+                if self.is_renting_active {
+                    ui.colored_label(egui::Color32::GREEN, "🟢");
+                    ui.strong("RENTING ACTIVE - PC Available for SSH Access");
+                } else {
+                    ui.colored_label(egui::Color32::RED, "🔴"); 
+                    ui.label("Rental Stopped - PC Not Available");
+                }
+            });
+            
+            ui.add_space(5.0);
+            
+            // Start/Stop button
+            ui.horizontal(|ui| {
+                if self.is_renting_active {
+                    if ui.button("🛑 Stop Renting").clicked() {
+                        self.stop_renting();
+                    }
+                    ui.label("Click to make your PC unavailable for rental");
+                } else {
+                    if ui.button("🚀 Start Renting").clicked() {
+                        self.start_renting();
+                    }
+                    ui.label("Click to make your PC available for SSH rental");
+                }
+            });
+            
+            // Show current status details
+            match &status {
+                SetupStatus::Running => {
+                    ui.separator();
+                    ui.label(format!("🌐 ZeroTier IP: {}", server_info.zerotier_ip));
+                    ui.label(format!("🔌 SSH Service: {}", if server_info.ssh_status { "Running" } else { "Stopped" }));
+                    
+                    // Show active SSH users
+                    let active_jobs = self.ssh_manager.get_active_jobs();
+                    if !active_jobs.is_empty() {
+                        ui.colored_label(egui::Color32::ORANGE, format!("🔐 Active SSH Users: {}", active_jobs.len()));
+                        for job in &active_jobs {
+                            ui.label(format!("  → {}: {}", job.ssh_user.username, job.client_id));
+                        }
+                    } else if self.is_renting_active {
+                        ui.colored_label(egui::Color32::GREEN, "✅ Ready for new SSH connections");
+                    }
+                }
+                SetupStatus::Installing(step) => {
+                    ui.horizontal(|ui| {
+                        ui.colored_label(egui::Color32::YELLOW, "🟡");
+                        ui.spinner();
+                        ui.label(format!("Setting up: {}", step));
+                    });
+                }
+                _ => {
+                    ui.separator();
+                    ui.colored_label(egui::Color32::YELLOW, "⚠️ Setup required before renting");
+                    if ui.button("🚀 Start Setup").clicked() {
+                        self.show_setup_wizard = true;
+                    }
+                }
+            }
+        });
+        
+        ui.add_space(10.0);
+        
+        // Quick Actions (if renting is active)
+        if self.is_renting_active {
+            ui.group(|ui| {
+                ui.heading("🛠️ Quick Actions");
+                ui.horizontal(|ui| {
+                    if ui.button("🔐 View SSH Users").clicked() {
+                        self.selected_tab = Tab::SshUsers;
+                    }
+                    if ui.button("👥 View Clients").clicked() {
+                        self.selected_tab = Tab::Clients;
+                    }
+                    if ui.button("🧪 Test Job").clicked() {
+                        // Create a test job
+                        let ssh_manager = self.ssh_manager.clone();
+                        let test_job_id = format!("test_job_{}", uuid::Uuid::new_v4());
+                        let test_client_id = "dashboard_test".to_string();
+                        
+                        tokio::spawn(async move {
+                            match ssh_manager.create_job_user(&test_job_id, &test_client_id, 1).await {
+                                Ok(job_access) => {
+                                    println!("Created test SSH user: {}", job_access.ssh_user.username);
+                                }
+                                Err(e) => {
+                                    eprintln!("Failed to create test SSH user: {}", e);
+                                }
+                            }
+                        });
+                    }
+                });
+            });
+            
+            ui.add_space(10.0);
+        }
+        
+        // Setup Status
+        ui.group(|ui| {
+            ui.heading("Setup Status");
             match &status {
                 SetupStatus::Running => {
                     ui.horizontal(|ui| {
@@ -709,6 +1057,136 @@ impl EryzaaRentalApp {
         });
     }
     
+    fn show_clients(&mut self, ui: &mut egui::Ui) {
+        ui.heading("👥 Connected Clients");
+        ui.separator();
+        
+        let clients = self.connected_clients.lock().unwrap().clone();
+        let server_info = self.server_info.lock().unwrap().clone();
+        
+        // Connection Info
+        ui.group(|ui| {
+            ui.heading("📡 Connection Information");
+            ui.label(format!("🌐 ZeroTier IP: {}", server_info.zerotier_ip));
+            ui.label(format!("🆔 Node ID: {}", self.node_id));
+            ui.label(format!("📊 Discovery Status: {}", 
+                if self.discovery_service.is_some() { "Active" } else { "Inactive" }
+            ));
+        });
+        
+        ui.add_space(10.0);
+        
+        // Client List
+        ui.group(|ui| {
+            ui.heading("📋 Discovered Clients");
+            
+            if clients.is_empty() {
+                ui.label("👥 No clients discovered yet");
+                ui.label("💡 Clients will appear here when they join the network");
+            } else {
+                ui.label(format!("Found {} client(s):", clients.len()));
+                
+                egui::ScrollArea::vertical().max_height(300.0).show(ui, |ui| {
+                    for client in &clients {
+                        ui.group(|ui| {
+                            ui.horizontal(|ui| {
+                                ui.colored_label(egui::Color32::GREEN, "🟢");
+                                ui.label(format!("Client: {}", &client.node_id[..8]));
+                                
+                                ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                                    if ui.button("📋 Copy IP").clicked() {
+                                        let ip = client.zerotier_ip.as_ref()
+                                            .unwrap_or(&client.ip_address);
+                                        ui.output_mut(|o| o.copied_text = ip.clone());
+                                    }
+                                    
+                                    if ui.button("🔗 Connect SSH").clicked() {
+                                        let ip = client.zerotier_ip.as_ref()
+                                            .unwrap_or(&client.ip_address);
+                                        let ssh_cmd = format!("gnome-terminal -- ssh rental@{}", ip);
+                                        let _ = Command::new("sh").arg("-c").arg(&ssh_cmd).spawn();
+                                    }
+                                });
+                            });
+                            
+                            ui.label(format!("📍 IP: {}", 
+                                client.zerotier_ip.as_ref().unwrap_or(&client.ip_address)
+                            ));
+                            
+                            if let Some(zt_ip) = &client.zerotier_ip {
+                                ui.label(format!("🌐 ZeroTier: {}", zt_ip));
+                            }
+                            
+                            ui.label(format!("⏰ Last seen: {} seconds ago", 
+                                std::time::SystemTime::now()
+                                    .duration_since(std::time::UNIX_EPOCH)
+                                    .unwrap()
+                                    .as_secs() - client.timestamp
+                            ));
+                        });
+                    }
+                });
+            }
+        });
+        
+        ui.add_space(10.0);
+        
+        // Actions
+        ui.group(|ui| {
+            ui.heading("🛠️ Client Actions");
+            ui.horizontal(|ui| {
+                if ui.button("🔄 Refresh Discovery").clicked() {
+                    // Force refresh discovery
+                    self.update_discovery_service();
+                }
+                
+                if ui.button("📤 Broadcast Availability").clicked() {
+                    // Force send advertisement
+                    if let Some(ref service_arc) = self.discovery_service {
+                        if let Ok(mut service) = service_arc.lock() {
+                            service.update_status(NodeStatus::Available);
+                        }
+                    }
+                }
+                
+                if ui.button("📋 Export Client List").clicked() {
+                    // Could implement client list export
+                }
+            });
+        });
+        
+        // Manual Connection
+        ui.add_space(10.0);
+        ui.group(|ui| {
+            ui.heading("🔗 Manual Connection");
+            ui.label("Share this information with clients:");
+            
+            ui.group(|ui| {
+                ui.horizontal(|ui| {
+                    ui.monospace(format!("ssh rental@{}", server_info.zerotier_ip));
+                    if ui.button("📋").clicked() {
+                        let ssh_cmd = format!("ssh rental@{}", server_info.zerotier_ip);
+                        ui.output_mut(|o| o.copied_text = ssh_cmd);
+                    }
+                });
+                
+                ui.horizontal(|ui| {
+                    ui.monospace("Password: rental_user_2024");
+                    if ui.button("📋").clicked() {
+                        ui.output_mut(|o| o.copied_text = "rental_user_2024".to_string());
+                    }
+                });
+                
+                ui.horizontal(|ui| {
+                    ui.monospace(format!("Node ID: {}", self.node_id));
+                    if ui.button("📋").clicked() {
+                        ui.output_mut(|o| o.copied_text = self.node_id.clone());
+                    }
+                });
+            });
+        });
+    }
+    
     fn show_network(&mut self, ui: &mut egui::Ui) {
         ui.heading("🌐 Network Status");
         ui.separator();
@@ -746,6 +1224,161 @@ impl EryzaaRentalApp {
                 }
             });
             ui.label("Password: rental_user_2024");
+        });
+    }
+    
+    fn show_ssh_users(&mut self, ui: &mut egui::Ui) {
+        ui.heading("🔐 SSH User Management");
+        ui.separator();
+        
+        // Current active user
+        ui.group(|ui| {
+            ui.heading("Current Active User");
+            if let Some(current_user) = self.ssh_manager.get_current_user() {
+                ui.label(format!("👤 Active SSH User: {}", current_user));
+                ui.label("🔒 Status: ONE USER ONLY - No other SSH access allowed");
+                
+                // Show terminate button
+                ui.horizontal(|ui| {
+                    if ui.button("🛑 Terminate Access").clicked() {
+                        // Find job ID for this user
+                        let active_jobs = self.ssh_manager.get_active_jobs();
+                        if let Some(job) = active_jobs.iter().find(|j| j.ssh_user.username == current_user) {
+                            let ssh_manager = self.ssh_manager.clone();
+                            let job_id = job.job_id.clone();
+                            tokio::spawn(async move {
+                                if let Err(e) = ssh_manager.remove_job_user(&job_id).await {
+                                    eprintln!("Failed to remove SSH user: {}", e);
+                                }
+                            });
+                        }
+                    }
+                });
+            } else {
+                ui.label("🟢 No active SSH user - Rental node available");
+                ui.label("✅ Ready to accept new job assignments");
+            }
+        });
+        
+        ui.add_space(10.0);
+        
+        // Active jobs list
+        ui.group(|ui| {
+            ui.heading("Active Job Sessions");
+            
+            let active_jobs = self.ssh_manager.get_active_jobs();
+            
+            if active_jobs.is_empty() {
+                ui.label("📋 No active job sessions");
+            } else {
+                egui::ScrollArea::vertical().show(ui, |ui| {
+                    for job in &active_jobs {
+                        ui.group(|ui| {
+                            ui.horizontal(|ui| {
+                                ui.vertical(|ui| {
+                                    ui.strong(format!("Job: {}", job.job_id));
+                                    ui.label(format!("👤 SSH User: {}", job.ssh_user.username));
+                                    ui.label(format!("👨‍💻 Client: {}", job.client_id));
+                                });
+                                
+                                ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                                    if ui.button("🛑 End Session").clicked() {
+                                        let ssh_manager = self.ssh_manager.clone();
+                                        let job_id = job.job_id.clone();
+                                        tokio::spawn(async move {
+                                            if let Err(e) = ssh_manager.remove_job_user(&job_id).await {
+                                                eprintln!("Failed to remove SSH user: {}", e);
+                                            }
+                                        });
+                                    }
+                                });
+                            });
+                            
+                            ui.separator();
+                            
+                            ui.horizontal(|ui| {
+                                ui.label(format!("⏰ Created: {}", 
+                                    job.ssh_user.created_at.format("%Y-%m-%d %H:%M:%S UTC")
+                                ));
+                                ui.label(format!("⏰ Expires: {}", 
+                                    job.expires_at.format("%Y-%m-%d %H:%M:%S UTC")
+                                ));
+                            });
+                            
+                            // SSH connection info
+                            ui.group(|ui| {
+                                ui.heading("SSH Connection Info");
+                                let server_info = self.server_info.lock().unwrap();
+                                let ssh_cmd = format!("ssh {}@{}", 
+                                    job.ssh_user.username, 
+                                    server_info.ip_address
+                                );
+                                
+                                ui.horizontal(|ui| {
+                                    ui.label("Command:");
+                                    ui.code(&ssh_cmd);
+                                    if ui.button("📋").clicked() {
+                                        ui.output_mut(|o| o.copied_text = ssh_cmd);
+                                    }
+                                });
+                                
+                                ui.label("🔐 User has system access with docker privileges");
+                                ui.label("⚠️ Access will be automatically revoked when job ends");
+                            });
+                        });
+                        ui.add_space(5.0);
+                    }
+                });
+            }
+        });
+        
+        ui.add_space(10.0);
+        
+        // Management actions
+        ui.group(|ui| {
+            ui.heading("🛠️ Management Actions");
+            
+            ui.horizontal(|ui| {
+                if ui.button("🧹 Cleanup Expired Users").clicked() {
+                    let ssh_manager = self.ssh_manager.clone();
+                    tokio::spawn(async move {
+                        match ssh_manager.cleanup_expired_users().await {
+                            Ok(removed) => {
+                                println!("Cleaned up {} expired users", removed.len());
+                            }
+                            Err(e) => {
+                                eprintln!("Failed to cleanup expired users: {}", e);
+                            }
+                        }
+                    });
+                }
+                
+                if ui.button("🔄 Refresh Status").clicked() {
+                    // Status is automatically refreshed via get_active_jobs()
+                }
+                
+                if ui.button("🧪 Test Job Creation").clicked() {
+                    let ssh_manager = self.ssh_manager.clone();
+                    let test_job_id = format!("test_job_{}", uuid::Uuid::new_v4());
+                    let test_client_id = "test_client_123".to_string();
+                    
+                    tokio::spawn(async move {
+                        match ssh_manager.create_job_user(&test_job_id, &test_client_id, 1).await {
+                            Ok(job_access) => {
+                                println!("Created test SSH user: {}", job_access.ssh_user.username);
+                            }
+                            Err(e) => {
+                                eprintln!("Failed to create test SSH user: {}", e);
+                            }
+                        }
+                    });
+                }
+            });
+            
+            ui.add_space(5.0);
+            ui.label("💡 Pro Tip: Only one SSH user can access this rental node at a time");
+            ui.label("🔒 When a user connects, all other SSH access is blocked");
+            ui.label("♻️ Users are automatically created when jobs start and deleted when jobs end");
         });
     }
     

@@ -8,10 +8,13 @@ import {
   Menu, 
   User,
   Wallet,
-  LogOut
+  LogOut,
+  Users,
+  Monitor
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
+import { useRole } from '../../contexts/RoleContext';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface HeaderProps {
@@ -21,6 +24,7 @@ interface HeaderProps {
 const Header: React.FC<HeaderProps> = ({ onMenuToggle }) => {
   const { user, logout } = useAuth();
   const { isDark, toggleTheme } = useTheme();
+  const { userRole, toggleRole } = useRole();
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -62,6 +66,24 @@ const Header: React.FC<HeaderProps> = ({ onMenuToggle }) => {
               <Moon size={20} className="text-gray-600 dark:text-gray-300" />
             )}
           </button>
+
+          {/* Role toggle */}
+          {user && (
+            <button
+              onClick={toggleRole}
+              className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center space-x-1"
+              title={`Switch to ${userRole === 'client' ? 'Provider' : 'Client'} view`}
+            >
+              {userRole === 'client' ? (
+                <Users size={20} className="text-blue-600 dark:text-blue-400" />
+              ) : (
+                <Monitor size={20} className="text-green-600 dark:text-green-400" />
+              )}
+              <span className="text-xs font-medium text-gray-600 dark:text-gray-300 hidden lg:block">
+                {userRole === 'client' ? 'Client' : 'Provider'}
+              </span>
+            </button>
+          )}
 
           {/* Notifications */}
           <button className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 relative">

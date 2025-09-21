@@ -1,5 +1,5 @@
 const { network, ethers } = require("hardhat");
-const { developmentChains } = require("../helper-hardhat-config.cjs");
+const { developmentChains } = require("../../helper-hardhat-config.cjs");
 const { verify } = require("../utils/verify.cjs");
 
 module.exports = async ({ getNamedAccounts, deployments }) => {
@@ -24,16 +24,20 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
     }
 
     // Contract constructor arguments
-    const INITIAL_SUPPLY = ethers.parseEther(process.env.INITIAL_SUPPLY || "1000000");
-
-    const args = [INITIAL_SUPPLY];
+    const args = [
+        deployer, // _teamVesting (using deployer for simplicity)
+        deployer, // _investorVesting (using deployer for simplicity)  
+        deployer, // _communityRewards (using deployer for simplicity)
+        deployer, // _treasury (using deployer for simplicity)
+        deployer  // _liquidityPool (using deployer for simplicity)
+    ];
 
     // Get gas price using standard ethers
     let gasPrice;
     try {
-        const currentGasPrice = await ethers.provider.getGasPrice();
-        gasPrice = currentGasPrice;
-        log(`Current gas price: ${ethers.formatUnits(currentGasPrice, "gwei")} gwei`);
+        const feeData = await ethers.provider.getFeeData();
+        gasPrice = feeData.gasPrice;
+        log(`Current gas price: ${ethers.formatUnits(feeData.gasPrice, "gwei")} gwei`);
     } catch (error) {
         log("Could not fetch gas price:", error.message);
         gasPrice = network.config.gasPrice;

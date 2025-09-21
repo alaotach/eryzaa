@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { useWeb3 } from './Web3Context';
 
 export interface Job {
   id: string;
@@ -26,6 +27,7 @@ interface JobsContextType {
   updateJobStatus: (jobId: string, status: Job['status'], progress?: number) => void;
   searchJobs: (query: string) => Job[];
   filterJobs: (filters: any) => Job[];
+  refreshFromBlockchain: () => Promise<void>;
 }
 
 const JobsContext = createContext<JobsContextType | undefined>(undefined);
@@ -38,145 +40,87 @@ export const useJobs = () => {
   return context;
 };
 
-// Mock seed data
-const seedJobs: Job[] = [
-  {
-    id: 'job_1',
-    name: 'Image Classification Model Training',
-    description: 'Train a CNN model on a dataset of 10,000 images for multi-class classification. Requires GPU compute with at least 8GB VRAM.',
-    reward: 150,
-    computeSize: 'large',
-    priority: 'urgent',
-    status: 'submitted',
-    requester: 'researcher_ai',
-    progress: 0,
-    createdAt: new Date('2024-01-15T10:30:00'),
-    updatedAt: new Date('2024-01-15T10:30:00'),
-    requesterReputation: 4.8,
-    tokensLocked: 150,
-    fileSize: '2.3GB'
-  },
-  {
-    id: 'job_2',
-    name: 'Natural Language Processing Task',
-    description: 'Fine-tune a transformer model for sentiment analysis on customer reviews. Dataset includes 50k samples.',
-    reward: 85,
-    computeSize: 'medium',
-    priority: 'normal',
-    status: 'running',
-    requester: 'startup_nlp',
-    provider: 'provider_123',
-    progress: 45,
-    createdAt: new Date('2024-01-14T14:20:00'),
-    updatedAt: new Date('2024-01-15T09:15:00'),
-    requesterReputation: 4.2,
-    tokensLocked: 85,
-    fileSize: '500MB'
-  },
-  {
-    id: 'job_3',
-    name: 'Reinforcement Learning Simulation',
-    description: 'Train an RL agent to play a custom game environment. Requires extended compute time with stable connection.',
-    reward: 200,
-    computeSize: 'large',
-    priority: 'normal',
-    status: 'submitted',
-    requester: 'game_ai_lab',
-    progress: 0,
-    createdAt: new Date('2024-01-15T08:45:00'),
-    updatedAt: new Date('2024-01-15T08:45:00'),
-    requesterReputation: 4.6,
-    tokensLocked: 200,
-    fileSize: '1.8GB'
-  }
-];
-
 export const JobsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [jobs, setJobs] = useState<Job[]>([]);
   const [myJobs, setMyJobs] = useState<Job[]>([]);
+  const { userJobs, isConnected } = useWeb3();
+
+  // Convert blockchain JobInfo to our Job interface
+  const convertBlockchainJob = (blockchainJob: any): Job => {
+    const getStatusString = (status: number): Job['status'] => {
+      switch (status) {
+        case 0: return 'submitted';
+        case 1: return 'assigned';
+        case 2: return 'running';
+        case 3: return 'proof_submitted';
+        case 8: return 'completed';
+        default: return 'submitted';
+      }
+    };
+
+    const getComputeSize = (duration: number): 'small' | 'medium' | 'large' => {
+      if (duration <= 1) return 'small';
+      if (duration <= 4) return 'medium';
+      return 'large';
+    };
+
+    return {
+      id: `blockchain_${blockchainJob.id}`,
+      name: blockchainJob.jobType || `Compute Job ${blockchainJob.id}`,
+      description: blockchainJob.jobConfig || 'Blockchain compute job',
+      reward: parseFloat(blockchainJob.totalCost) || 0,
+      computeSize: getComputeSize(blockchainJob.duration),
+      priority: blockchainJob.duration > 8 ? 'urgent' : 'normal',
+      status: getStatusString(blockchainJob.status),
+      requester: blockchainJob.client || 'Unknown',
+      provider: blockchainJob.provider !== '0x0000000000000000000000000000000000000000' ? blockchainJob.provider : undefined,
+      progress: blockchainJob.status === 8 ? 100 : blockchainJob.status === 2 ? 50 : 0,
+      createdAt: new Date(blockchainJob.startTime * 1000) || new Date(),
+      updatedAt: new Date(),
+      requesterReputation: 5.0,
+      tokensLocked: parseFloat(blockchainJob.totalCost) || 0,
+      fileSize: blockchainJob.duration > 4 ? '2.0GB' : '500MB'
+    };
+  };
 
   useEffect(() => {
-    // Load jobs from localStorage or use seed data
-    const savedJobs = localStorage.getItem('eryza_jobs');
-    if (savedJobs) {
-      const parsedJobs = JSON.parse(savedJobs).map((job: any) => ({
-        ...job,
-        createdAt: new Date(job.createdAt),
-        updatedAt: new Date(job.updatedAt)
-      }));
-      setJobs(parsedJobs);
+    if (isConnected && userJobs.length > 0) {
+      // Only show blockchain data when connected
+      const blockchainJobs = userJobs.map(convertBlockchainJob);
+      setMyJobs(blockchainJobs);
+      setJobs(blockchainJobs);
     } else {
-      setJobs(seedJobs);
-      localStorage.setItem('eryza_jobs', JSON.stringify(seedJobs));
+      // Show empty arrays when not connected or no data
+      setJobs([]);
+      setMyJobs([]);
     }
+  }, [isConnected, userJobs]);
 
-    // Load my jobs
-    const savedMyJobs = localStorage.getItem('eryza_my_jobs');
-    if (savedMyJobs) {
-      const parsedMyJobs = JSON.parse(savedMyJobs).map((job: any) => ({
-        ...job,
-        createdAt: new Date(job.createdAt),
-        updatedAt: new Date(job.updatedAt)
-      }));
-      setMyJobs(parsedMyJobs);
+  const refreshFromBlockchain = async () => {
+    if (isConnected && userJobs.length > 0) {
+      const blockchainJobs = userJobs.map(convertBlockchainJob);
+      setMyJobs(blockchainJobs);
+      setJobs(blockchainJobs);
     }
-  }, []);
+  };
 
-  const addJob = (jobData: Omit<Job, 'id' | 'createdAt' | 'updatedAt'>) => {
-    const newJob: Job = {
-      ...jobData,
-      id: 'job_' + Math.random().toString(36).substr(2, 9),
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
-    
-    const updatedJobs = [...jobs, newJob];
-    const updatedMyJobs = [...myJobs, newJob];
-    
-    setJobs(updatedJobs);
-    setMyJobs(updatedMyJobs);
-    localStorage.setItem('eryza_jobs', JSON.stringify(updatedJobs));
-    localStorage.setItem('eryza_my_jobs', JSON.stringify(updatedMyJobs));
+  const addJob = async (jobData: Omit<Job, 'id' | 'createdAt' | 'updatedAt'>) => {
+    console.log('Adding job to blockchain:', jobData);
+    // This would integrate with Web3Context to create blockchain job
   };
 
   const takeJob = (jobId: string, providerId: string) => {
-    const updatedJobs = jobs.map(job => 
-      job.id === jobId 
-        ? { ...job, provider: providerId, status: 'assigned' as Job['status'], updatedAt: new Date() }
-        : job
-    );
-    
-    const takenJob = updatedJobs.find(job => job.id === jobId);
-    const updatedMyJobs = takenJob ? [...myJobs, takenJob] : myJobs;
-    
-    setJobs(updatedJobs);
-    setMyJobs(updatedMyJobs);
-    localStorage.setItem('eryza_jobs', JSON.stringify(updatedJobs));
-    localStorage.setItem('eryza_my_jobs', JSON.stringify(updatedMyJobs));
+    console.log('Taking job:', jobId, 'by provider:', providerId);
+    // This would integrate with Web3Context to take blockchain job
   };
 
   const updateJobStatus = (jobId: string, status: Job['status'], progress?: number) => {
-    const updateJobInArray = (jobArray: Job[]) => jobArray.map(job => 
-      job.id === jobId 
-        ? { 
-            ...job, 
-            status, 
-            progress: progress !== undefined ? progress : job.progress,
-            updatedAt: new Date() 
-          }
-        : job
-    );
-
-    const updatedJobs = updateJobInArray(jobs);
-    const updatedMyJobs = updateJobInArray(myJobs);
-    
-    setJobs(updatedJobs);
-    setMyJobs(updatedMyJobs);
-    localStorage.setItem('eryza_jobs', JSON.stringify(updatedJobs));
-    localStorage.setItem('eryza_my_jobs', JSON.stringify(updatedMyJobs));
+    console.log('Updating job status:', jobId, status, progress);
+    // This would integrate with Web3Context to update blockchain job
   };
 
   const searchJobs = (query: string) => {
+    if (!query.trim()) return jobs;
     return jobs.filter(job => 
       job.name.toLowerCase().includes(query.toLowerCase()) ||
       job.description.toLowerCase().includes(query.toLowerCase())
@@ -201,7 +145,8 @@ export const JobsProvider: React.FC<{ children: React.ReactNode }> = ({ children
       takeJob,
       updateJobStatus,
       searchJobs,
-      filterJobs
+      filterJobs,
+      refreshFromBlockchain
     }}>
       {children}
     </JobsContext.Provider>

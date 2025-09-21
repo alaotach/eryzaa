@@ -18,27 +18,96 @@ cargo build --release
 ```
 
 ### 2. **Run the Desktop Applications**
+
+**⚠️ IMPORTANT: SSH User Management Setup Required**
+
+Before testing SSH features, you need to start the privileged SSH service:
+
+```bash
+# Start the SSH management service (requires sudo once)
+sudo /home/aloo/eryzaa/tools/ssh_service.sh daemon &
+
+# Or start it in a separate terminal to see logs
+sudo /home/aloo/eryzaa/tools/ssh_service.sh daemon
+```
+
+Then run the GUI applications:
+
 ```bash
 # Run GUI Client (for renting/using resources)
 ./target/release/eryzaa-client
 
-# Run GUI Rental Server (for sharing your PC)
+# Run GUI Rental Server (for sharing your PC) - WITH SSH MANAGEMENT
 ./target/release/eryzaa-rental
 ```
 
-### 3. **Test the Three Access Types**
+**✅ SUCCESS: Both GUIs should open!** 
 
-#### 🖥️ **Test SSH Access**
+### 🔐 **Test SSH User Management (NEW!)**
+
+#### **Step 0: Start SSH Service (Required)**
+```bash
+# This runs as a background service and handles user creation/deletion
+sudo /home/aloo/eryzaa/tools/ssh_service.sh daemon &
+
+# Check if it's running
+ls -la /tmp/eryzaa_ssh_service.sock
+```
+
+#### **Step 1: Test the Rental GUI SSH Features**
+1. **Open the Rental GUI**: `./target/release/eryzaa-rental`
+2. **Go to "SSH Users" tab** - this is the new feature!
+3. **Click "Test Job Creation"** to simulate a paying customer
+4. **Watch as SSH user gets created** (only one at a time!)
+5. **Copy the SSH command** to connect
+
+#### **Step 2: Test the Web Interface**
+1. **Start the web backend** (if not running):
+   ```bash
+   # The Node.js backend should be running on port 5000
+   cd /home/aloo/eryzaa/backend && npm start
+   ```
+
+2. **Start the React frontend**:
+   ```bash
+   cd /home/aloo/eryzaa/project && npm run dev
+   ```
+
+3. **Visit the Jobs Display**: `http://localhost:5173/jobs-display`
+4. **See real-time job info**: Active jobs, rental nodes, SSH access details
+
+#### **Step 3: Test End-to-End SSH Flow**
+1. **Rental side**: Create test job in SSH Users tab
+2. **Web interface**: See the job appear with SSH details
+3. **Client side**: Use the displayed SSH command to connect
+4. **Rental side**: Terminate the job to delete SSH access
+
+### 3. **Test the Complete Integration**
+
+### 3. **Test the Complete Integration**
+
+#### 🖥️ **Test SSH Access (ONE USER ONLY)**
 1. **Start a Rental Server:**
-   - Run the GUI Rental app on one computer
-   - Click "Setup" → "Quick Setup" 
-   - This will start sharing your PC via SSH
+   - Run: `./target/release/eryzaa-rental`
+   - Go to "SSH Users" tab
+   - Click "🧪 Test Job Creation" to simulate payment
+   - ⚠️ **ONLY ONE SSH USER ALLOWED** - this enforces exclusivity!
 
 2. **Connect as Client:**
-   - Run the GUI Client app on another computer (or same)
-   - Go to "SSH" tab
-   - Click "Refresh Network" to discover available PCs
-   - Click "Open Terminal" to connect via SSH
+   - Copy the SSH command from the rental GUI
+   - Open terminal and paste the SSH command
+   - You now have exclusive access to that rental node!
+
+3. **Test on Website:**
+   - Visit: `http://localhost:5173/jobs-display`
+   - See your active job with SSH details
+   - See "ONLY ONE USER" warnings
+
+#### 🌐 **Test Web Integration**
+- **Backend running**: Node.js on port 5000 ✅
+- **Frontend**: React on port 5173
+- **Real-time updates**: Jobs display every 10 seconds
+- **SSH info display**: Copy-paste SSH commands
 
 #### 🧠 **Test AI Model Training**
 1. **Start Model Training Platform:**

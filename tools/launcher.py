@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Eryzaa Cross-Platform Launcher
+Eryza Cross-Platform Launcher
 Automatically detects the platform and launches the appropriate application.
 """
 
@@ -12,7 +12,7 @@ import tkinter as tk
 from tkinter import messagebox, ttk
 from pathlib import Path
 
-class EryzaaLauncher:
+class EryzaLauncher:
     def __init__(self):
         self.platform = platform.system().lower()
         self.arch = platform.machine().lower()
@@ -156,7 +156,7 @@ class EryzaaLauncher:
     def create_gui(self):
         """Create the main GUI."""
         self.root = tk.Tk()
-        self.root.title("Eryzaa Launcher")
+        self.root.title("Eryza Launcher")
         self.root.geometry("600x400")
         self.root.resizable(False, False)
         
@@ -169,7 +169,7 @@ class EryzaaLauncher:
         main_frame.pack(fill=tk.BOTH, expand=True, padx=20, pady=20)
         
         # Title
-        title_label = tk.Label(main_frame, text="🏠 Eryzaa - Computing Resource Sharing", 
+        title_label = tk.Label(main_frame, text="🏠 Eryza - Computing Resource Sharing", 
                               font=("Arial", 16, "bold"), bg='#f0f0f0')
         title_label.pack(pady=(0, 20))
         
@@ -198,7 +198,7 @@ class EryzaaLauncher:
         
         rental_btn = tk.Button(rental_frame, text="🖥️ Launch Rental Server", 
                               font=("Arial", 11, "bold"), bg='#4CAF50', fg='white',
-                              command=lambda: self.launch_app('eryzaa-rental'))
+                              command=lambda: self.launch_app('eryza-rental'))
         rental_btn.pack(pady=5)
         
         # Client section
@@ -211,7 +211,7 @@ class EryzaaLauncher:
         
         client_btn = tk.Button(client_frame, text="💻 Launch Client", 
                               font=("Arial", 11, "bold"), bg='#2196F3', fg='white',
-                              command=lambda: self.launch_app('eryzaa-client'))
+                              command=lambda: self.launch_app('eryza-client'))
         client_btn.pack(pady=5)
         
         # CLI section
@@ -224,7 +224,7 @@ class EryzaaLauncher:
         
         cli_btn = tk.Button(cli_frame, text="⌨️ Launch CLI Client", 
                            font=("Arial", 11), bg='#FF9800', fg='white',
-                           command=lambda: self.launch_app('eryzaa-cli'))
+                           command=lambda: self.launch_app('eryza-cli'))
         cli_btn.pack(pady=5)
         
         # Bottom frame
@@ -280,7 +280,7 @@ class EryzaaLauncher:
         
         build_instructions = f"""Build Instructions for {self.platform.title()}
 
-To build the Eryzaa applications:
+To build the Eryza applications:
 
 1. Install Rust (if not already installed):
    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
@@ -322,11 +322,11 @@ For more detailed instructions, see the README.md file.
             # Command line mode
             app_name = sys.argv[1]
             if app_name in ['rental', 'server']:
-                app_name = 'eryzaa-rental'
+                app_name = 'eryza-rental'
             elif app_name in ['client']:
-                app_name = 'eryzaa-client'
+                app_name = 'eryza-client'
             elif app_name in ['cli']:
-                app_name = 'eryzaa-cli'
+                app_name = 'eryza-cli'
             else:
                 print(f"Unknown application: {app_name}")
                 print("Available applications: rental, client, cli")
@@ -340,5 +340,5 @@ For more detailed instructions, see the README.md file.
             self.root.mainloop()
 
 if __name__ == "__main__":
-    launcher = EryzaaLauncher()
+    launcher = EryzaLauncher()
     launcher.run()

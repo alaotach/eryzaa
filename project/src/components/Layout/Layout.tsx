@@ -5,7 +5,7 @@ import Sidebar from './Sidebar';
 
 const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user } = useAuth();
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(true); // Default to open on desktop
 
   if (!user) {
     return <>{children}</>;
@@ -18,7 +18,9 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         onClose={() => setSidebarOpen(false)} 
       />
       
-      <div className="flex-1 flex flex-col overflow-hidden">
+      <div className={`flex-1 flex flex-col overflow-hidden transition-all duration-300 ${
+        sidebarOpen ? 'lg:ml-64' : 'lg:ml-0'
+      }`}>
         <Header onMenuToggle={() => setSidebarOpen(!sidebarOpen)} />
         
         <main className="flex-1 overflow-auto">

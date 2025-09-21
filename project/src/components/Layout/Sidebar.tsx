@@ -10,7 +10,8 @@ import {
   Settings,
   Wallet,
   BarChart3,
-  PlusCircle
+  PlusCircle,
+  Server
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 
@@ -23,6 +24,7 @@ const Sidebar: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpen, o
     { icon: Briefcase, label: 'Jobs Marketplace', path: '/jobs' },
     { icon: PlusCircle, label: 'Submit Job', path: '/submit-job', userOnly: true },
     { icon: BarChart3, label: 'My Jobs', path: '/my-jobs' },
+    { icon: Server, label: 'Server Monitor', path: '/server' },
     { icon: User, label: 'Profile', path: '/profile' },
     { icon: Wallet, label: 'Ledger', path: '/ledger' },
     { icon: Users, label: 'Community', path: '/community' },
@@ -35,8 +37,12 @@ const Sidebar: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpen, o
   );
 
   const sidebarVariants = {
-    open: { x: 0 },
-    closed: { x: '-100%' }
+    open: { 
+      x: 0
+    },
+    closed: { 
+      x: '-100%'
+    }
   };
 
   return (
@@ -44,13 +50,13 @@ const Sidebar: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpen, o
       {/* Mobile overlay */}
       {isOpen && (
         <div 
-          className="fixed inset-0 bg-black bg-opacity-50 z-40"
+          className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
           onClick={onClose}
         />
       )}
       
       <motion.div 
-        className={`fixed left-0 top-0 h-full w-64 bg-white dark:bg-dark-card border-r border-gray-200 dark:border-dark-border z-50 lg:relative lg:translate-x-0`}
+        className={`fixed left-0 top-0 h-full w-64 bg-white dark:bg-dark-card border-r border-gray-200 dark:border-dark-border z-50 lg:z-30`}
         variants={sidebarVariants}
         animate={isOpen ? 'open' : 'closed'}
         initial={false}

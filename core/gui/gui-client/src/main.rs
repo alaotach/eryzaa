@@ -6,6 +6,11 @@ use std::time::Duration;
 use std::io;
 use tokio::runtime::Runtime;
 use std::collections::HashMap;
+use eryzaa_discovery::{
+    DiscoveryService, NodeAdvertisement, NodeType, NodeStatus,
+    create_client_advertisement,
+};
+use uuid::Uuid;
 
 pub struct EryzaaClientApp {
     // Connection state

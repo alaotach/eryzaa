@@ -3,12 +3,24 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { AuthProvider } from './contexts/AuthContext';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { JobsProvider } from './contexts/JobsContext';
+import { Web3Provider } from './contexts/Web3Context';
+import { RoleProvider } from './contexts/RoleContext';
 import { useAuth } from './contexts/AuthContext';
 import Layout from './components/Layout/Layout';
 import Landing from './pages/Landing';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import Jobs from './pages/Jobs';
+import MyJobs from './pages/MyJobs';
+import JobsLedger from './pages/JobsLedger';
+import JobDetailsSimple from './pages/JobDetailsSimple';
+import CreateJob from './pages/CreateJob';
+import Profile from './pages/Profile';
+import Settings from './pages/Settings';
+import Community from './pages/Community';
+import SmartContracts from './pages/SmartContracts';
+import SystemMonitoring from './pages/SystemMonitoring';
+import JobsDisplay from './components/JobsDisplay';
 
 // Protected Route Component
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -40,67 +52,66 @@ const AppContent: React.FC = () => {
             </ProtectedRoute>
           } />
           
-          {/* Temporary placeholders for other routes */}
+          <Route path="/jobs/:jobId" element={
+            <ProtectedRoute>
+              <JobDetailsSimple />
+            </ProtectedRoute>
+          } />
+          
+          <Route path="/create-job" element={
+            <ProtectedRoute>
+              <CreateJob />
+            </ProtectedRoute>
+          } />
+          
+          {/* Main routes - each page shows real content */}
           <Route path="/submit-job" element={
             <ProtectedRoute>
-              <div className="p-6">
-                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Submit Job</h1>
-                <p className="text-gray-600 dark:text-gray-400 mt-2">Coming soon...</p>
-              </div>
+              <CreateJob />
             </ProtectedRoute>
           } />
           
           <Route path="/my-jobs" element={
             <ProtectedRoute>
-              <div className="p-6">
-                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">My Jobs</h1>
-                <p className="text-gray-600 dark:text-gray-400 mt-2">Coming soon...</p>
-              </div>
+              <MyJobs />
             </ProtectedRoute>
           } />
           
           <Route path="/profile" element={
             <ProtectedRoute>
-              <div className="p-6">
-                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Profile</h1>
-                <p className="text-gray-600 dark:text-gray-400 mt-2">Coming soon...</p>
-              </div>
+              <Profile />
             </ProtectedRoute>
           } />
           
           <Route path="/ledger" element={
             <ProtectedRoute>
-              <div className="p-6">
-                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Ledger</h1>
-                <p className="text-gray-600 dark:text-gray-400 mt-2">Coming soon...</p>
-              </div>
+              <JobsLedger />
             </ProtectedRoute>
           } />
           
           <Route path="/community" element={
             <ProtectedRoute>
-              <div className="p-6">
-                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Community</h1>
-                <p className="text-gray-600 dark:text-gray-400 mt-2">Coming soon...</p>
-              </div>
+              <Community />
             </ProtectedRoute>
           } />
           
           <Route path="/conditions" element={
             <ProtectedRoute>
-              <div className="p-6">
-                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Smart Contract Conditions</h1>
-                <p className="text-gray-600 dark:text-gray-400 mt-2">Coming soon...</p>
-              </div>
+              <SmartContracts />
             </ProtectedRoute>
           } />
           
+          <Route path="/server" element={
+            <ProtectedRoute>
+              <SystemMonitoring />
+            </ProtectedRoute>
+          } />
+          
+          <Route path="/jobs-display" element={<JobsDisplay />} />
+          
           <Route path="/settings" element={
             <ProtectedRoute>
-              <div className="p-6">
-                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Settings</h1>
-                <p className="text-gray-600 dark:text-gray-400 mt-2">Coming soon...</p>
-              </div>
+              <Settings />
             </ProtectedRoute>
           } />
         </Routes>
@@ -113,11 +124,15 @@ const AppContent: React.FC = () => {
 function App() {
   return (
     <ThemeProvider>
-      <AuthProvider>
-        <JobsProvider>
-          <AppContent />
-        </JobsProvider>
-      </AuthProvider>
+      <Web3Provider>
+        <AuthProvider>
+          <RoleProvider>
+            <JobsProvider>
+              <AppContent />
+            </JobsProvider>
+          </RoleProvider>
+        </AuthProvider>
+      </Web3Provider>
     </ThemeProvider>
   );
 }

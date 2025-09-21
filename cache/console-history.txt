@@ -1,1 +1,4 @@
-await ethers.provider.getBlockNumber();
+"
+setup().catch(console.error);
+}  console.log('Marketplace contract address:', setAddress);  const setAddress = await jobsLedger.marketplaceContract();  // Verify the setting    console.log('✅ Marketplace contract set successfully');  await tx.wait();  const tx = await jobsLedger.setMarketplaceContract(marketplaceAddress);  console.log('Setting marketplace contract address...');    const marketplaceAddress = '0x4e093Ee1fF01320d0dDd879032B0A80D28574D84';  const jobsLedger = await ethers.getContractAt('EryzaJobsLedger', '0x0C3Ad216e180240954Ce731c91dC658b2A7A33b0');  const [deployer] = await ethers.getSigners();async function setup() {
+const { ethers } = require('hardhat');

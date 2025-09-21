@@ -5,7 +5,7 @@ use std::io::{self, Write};
 
 fn main() {
     println!("🏠 =======================================================");
-    println!("🚀  ERYZAA RENTAL SERVER CLI - v1.0.0");
+    println!("🚀  ERYZA RENTAL SERVER CLI - v1.0.0");
     println!("🏠 =======================================================");
     
     // Interactive menu

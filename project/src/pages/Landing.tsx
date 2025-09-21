@@ -33,21 +33,21 @@ const Landing: React.FC = () => {
       platform: 'Linux x64',
       icon: '🐧',
       description: 'Full automatic installation with Docker and ZeroTier',
-      filename: 'eryzaa-x86_64-unknown-linux-gnu.tar.gz',
+      filename: 'eryza-x86_64-unknown-linux-gnu.tar.gz',
       available: true
     },
     {
       platform: 'Windows x64',
       icon: '🪟',
       description: 'Manual Docker Desktop and ZeroTier installation required',
-      filename: 'eryzaa-windows-x64.zip',
+      filename: 'eryza-windows-x64.zip',
       available: false
     },
     {
       platform: 'macOS',
       icon: '🍎',
       description: 'Support for Intel and Apple Silicon processors',
-      filename: 'eryzaa-macos.dmg',
+      filename: 'eryza-macos.dmg',
       available: false
     }
   ];
@@ -69,7 +69,7 @@ const Landing: React.FC = () => {
           <div className="w-10 h-10 bg-neon-blue rounded-lg flex items-center justify-center">
             <Zap size={24} className="text-white" />
           </div>
-          <span className="text-2xl font-bold">Eryzaa</span>
+          <span className="text-2xl font-bold">Eryza</span>
         </div>
         
         <div className="flex items-center space-x-4">
@@ -93,7 +93,7 @@ const Landing: React.FC = () => {
           transition={{ duration: 0.8 }}
         >
           <h1 className="text-5xl md:text-7xl font-bold mb-6 leading-tight">
-            🚀 Eryzaa
+            🚀 Eryza
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-neon-blue to-accent-blue">
               <br />Decentralized Computing
             </span>
@@ -158,7 +158,7 @@ const Landing: React.FC = () => {
             transition={{ duration: 0.8 }}
             className="text-center mb-16"
           >
-            <h2 className="text-4xl font-bold mb-4">📥 Download Eryzaa</h2>
+            <h2 className="text-4xl font-bold mb-4">📥 Download Eryza</h2>
             <p className="text-xl text-gray-300">
               Choose your platform and start sharing or accessing computing resources
             </p>
@@ -209,7 +209,7 @@ const Landing: React.FC = () => {
           >
             <h2 className="text-4xl font-bold mb-4">Three Ways to Access Computing</h2>
             <p className="text-xl text-gray-300">
-              Eryzaa provides three distinct access types for different computing needs
+              Eryza provides three distinct access types for different computing needs
             </p>
           </motion.div>
           
@@ -271,7 +271,7 @@ const Landing: React.FC = () => {
               <Card className="p-8 bg-blue-900/20 border-blue-500/30">
                 <h3 className="text-2xl font-bold mb-4 text-blue-400">💰 Blockchain Features</h3>
                 <ul className="space-y-3 text-gray-300">
-                  <li><strong>EryzaaToken (ERZC):</strong> ERC-20 token for payments</li>
+                  <li><strong>EryzaToken (ERZC):</strong> ERC-20 token for payments</li>
                   <li><strong>Smart Contracts:</strong> Automated escrow and billing</li>
                   <li><strong>Network:</strong> Avalanche Fuji testnet</li>
                   <li><strong>Staking:</strong> Stake tokens for better rental rates</li>
@@ -302,7 +302,7 @@ const Landing: React.FC = () => {
               href="#downloads"
               className="inline-flex items-center justify-center bg-neon-blue text-white hover:bg-blue-600 transition-colors rounded-lg text-lg px-12 py-4 font-medium animate-pulse-neon"
             >
-              Download Eryzaa
+              Download Eryza
             </a>
             
             <Link
@@ -318,7 +318,7 @@ const Landing: React.FC = () => {
       {/* Footer */}
       <footer className="relative z-10 border-t border-gray-800 py-8 px-6">
         <div className="max-w-6xl mx-auto text-center text-gray-400">
-          <p>&copy; 2025 Eryzaa. Decentralized Computing Resource Sharing Platform.</p>
+          <p>&copy; 2025 Eryza. Decentralized Computing Resource Sharing Platform.</p>
           <p className="mt-2 text-sm">Built with Rust 🦀 | Docker 🐳 | Avalanche ⚡ | ZeroTier 🌐</p>
           <p className="mt-2 text-xs">ZeroTier Network: 363c67c55ad2489d | Avalanche Fuji Testnet</p>
         </div>

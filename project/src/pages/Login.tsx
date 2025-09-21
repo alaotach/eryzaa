@@ -9,25 +9,58 @@ import Card from '../components/UI/Card';
 
 const Login: React.FC = () => {
   const [isLogin, setIsLogin] = useState(true);
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [role, setRole] = useState<'user' | 'provider'>('user');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
   
-  const { login } = useAuth();
+  const { login, register } = useAuth();
   const { connect: connectWallet, isLoading: walletLoading } = useCoreWallet();
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    setError('');
+    setSuccess('');
     
     try {
-      await login(email, password, role);
-      navigate('/dashboard');
+      if (isLogin) {
+        const result = await login(email, password);
+        if (result.success) {
+          setSuccess('Login successful!');
+          navigate('/dashboard');
+        } else {
+          setError(result.message || 'Login failed');
+        }
+      } else {
+        if (password !== confirmPassword) {
+          setError('Passwords do not match');
+          return;
+        }
+        
+        const result = await register({
+          name,
+          email,
+          password,
+          confirmPassword
+        });
+        
+        if (result.success) {
+          setSuccess('Registration successful! Welcome to Eryza!');
+          navigate('/dashboard');
+        } else {
+          setError(result.message || 'Registration failed');
+        }
+      }
     } catch (error) {
-      console.error('Login failed:', error);
+      console.error('Authentication failed:', error);
+      setError('An unexpected error occurred. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -91,6 +124,26 @@ const Login: React.FC = () => {
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-4">
+              {/* Name - only show for registration */}
+              {!isLogin && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    Full Name
+                  </label>
+                  <div className="relative">
+                    <User size={20} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                    <input
+                      type="text"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      required={!isLogin}
+                      className="w-full pl-10 pr-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-neon-blue focus:border-transparent"
+                      placeholder="Enter your full name"
+                    />
+                  </div>
+                </div>
+              )}
+
               {/* Email */}
               <div>
                 <label className="block text-sm font-medium text-gray-300 mb-2">
@@ -133,6 +186,40 @@ const Login: React.FC = () => {
                   </button>
                 </div>
               </div>
+
+              {/* Confirm Password - only show for registration */}
+              {!isLogin && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    Confirm Password
+                  </label>
+                  <div className="relative">
+                    <Lock size={20} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                    <input
+                      type={showPassword ? 'text' : 'password'}
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      required={!isLogin}
+                      className="w-full pl-10 pr-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-neon-blue focus:border-transparent"
+                      placeholder="Confirm your password"
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* Error Message */}
+              {error && (
+                <div className="p-3 bg-red-500/20 border border-red-500 rounded-lg">
+                  <p className="text-red-400 text-sm">{error}</p>
+                </div>
+              )}
+
+              {/* Success Message */}
+              {success && (
+                <div className="p-3 bg-green-500/20 border border-green-500 rounded-lg">
+                  <p className="text-green-400 text-sm">{success}</p>
+                </div>
+              )}
 
               {/* Role Selection */}
               <div>

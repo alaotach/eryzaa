@@ -3,7 +3,9 @@ members = [
     "core/gui/gui-client",
     "core/gui/gui-rental", 
     "core/cli",
-    "core/server"
+    "core/server",
+    "core/discovery",
+    "core/ssh-manager"
 ]
 resolver = "2"
 

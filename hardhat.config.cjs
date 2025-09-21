@@ -14,6 +14,13 @@ module.exports = {
       viaIR: true,
     },
   },
+  paths: {
+    deploy: './blockchain/deploy',
+    sources: './blockchain/contracts',
+    artifacts: './artifacts',
+    cache: './cache',
+    tests: './test'
+  },
 
   networks: {
     // Avalanche Networks

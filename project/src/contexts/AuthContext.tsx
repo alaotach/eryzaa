@@ -1,27 +1,14 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-
-export interface User {
-  id: string;
-  email: string;
-  role: 'user' | 'provider';
-  walletAddress?: string;
-  tokenBalance: number;
-  reputation: number;
-  stakedTokens: number;
-  avatar: string;
-  completedJobs: number;
-  averageCompletionTime: number;
-  tokensEarned: number;
-}
+import { useWeb3 } from './Web3Context';
+import authService, { User } from '../services/authService';
 
 interface AuthContextType {
   user: User | null;
-  login: (email: string, password: string, role: 'user' | 'provider') => Promise<void>;
+  loading: boolean;
+  login: (email: string, password: string) => Promise<{ success: boolean; message?: string }>;
+  register: (data: { name: string; email: string; password: string; confirmPassword: string }) => Promise<{ success: boolean; message?: string }>;
   logout: () => void;
-  connectWallet: () => Promise<void>;
-  disconnectWallet: () => void;
-  switchRole: (role: 'user' | 'provider') => void;
-  updateUser: (updates: Partial<User>) => void;
+  updateUser: (updates: Partial<User>) => Promise<{ success: boolean; message?: string }>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -36,84 +23,135 @@ export const useAuth = () => {
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
+  const { userAddress } = useWeb3();
 
   useEffect(() => {
-    // Load user from localStorage on app start
-    const savedUser = localStorage.getItem('eryza_user');
-    if (savedUser) {
-      setUser(JSON.parse(savedUser));
-    }
+    const initializeAuth = async () => {
+      try {
+        // Check for stored auth token first
+        const storedAuth = localStorage.getItem('authUser');
+        if (storedAuth) {
+          try {
+            const parsedUser = JSON.parse(storedAuth);
+            setUser(parsedUser);
+            console.log('Restored user from localStorage:', parsedUser.email);
+          } catch (parseError) {
+            console.error('Error parsing stored auth:', parseError);
+            localStorage.removeItem('authUser');
+          }
+        }
+        
+        // Also try to get current user from server
+        const response = await authService.getCurrentUser();
+        if (response.success && response.user) {
+          setUser(response.user);
+          localStorage.setItem('authUser', JSON.stringify(response.user));
+        } else if (!storedAuth) {
+          // No stored auth and server doesn't recognize user
+          setUser(null);
+        }
+      } catch (error) {
+        console.error('Auth initialization error:', error);
+        // If server call fails but we have stored auth, keep the stored user
+        if (!localStorage.getItem('authUser')) {
+          setUser(null);
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    initializeAuth();
   }, []);
 
-  const login = async (email: string, password: string, role: 'user' | 'provider') => {
-    // Mock login - in real app, this would call your API
-    const mockUser: User = {
-      id: 'user_' + Math.random().toString(36).substr(2, 9),
-      email,
-      role,
-      tokenBalance: 1000,
-      reputation: 4.2,
-      stakedTokens: role === 'provider' ? 500 : 0,
-      avatar: `https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=400`,
-      completedJobs: 23,
-      averageCompletionTime: 2.5,
-      tokensEarned: 5420,
+  // Sync wallet address with user profile when wallet is connected
+  useEffect(() => {
+    const syncWalletAddress = async () => {
+      if (user && userAddress && user.walletAddress !== userAddress) {
+        try {
+          const response = await authService.connectWallet(userAddress);
+          if (response.success && response.user) {
+            setUser(response.user);
+            localStorage.setItem('authUser', JSON.stringify(response.user));
+          }
+        } catch (error) {
+          console.error('Error syncing wallet address:', error);
+        }
+      }
     };
-    
-    setUser(mockUser);
-    localStorage.setItem('eryza_user', JSON.stringify(mockUser));
-  };
 
-  const logout = () => {
-    setUser(null);
-    localStorage.removeItem('eryza_user');
-    localStorage.removeItem('eryza_wallet');
-  };
+    syncWalletAddress();
+  }, [user, userAddress]);
 
-  const connectWallet = async () => {
-    // Mock Core Wallet connection
-    if (user) {
-      const walletAddress = '0x' + Math.random().toString(16).substr(2, 40);
-      const updatedUser = { ...user, walletAddress };
-      setUser(updatedUser);
-      localStorage.setItem('eryza_user', JSON.stringify(updatedUser));
-      localStorage.setItem('eryza_wallet', walletAddress);
+  const login = async (email: string, password: string) => {
+    try {
+      const response = await authService.login({ email, password });
+      if (response.success && response.user) {
+        setUser(response.user);
+        localStorage.setItem('authUser', JSON.stringify(response.user));
+        return { success: true };
+      } else {
+        return { success: false, message: response.error || 'Login failed' };
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+      return { success: false, message: 'Network error. Please try again.' };
     }
   };
 
-  const disconnectWallet = () => {
-    if (user) {
-      const updatedUser = { ...user, walletAddress: undefined };
-      setUser(updatedUser);
-      localStorage.setItem('eryza_user', JSON.stringify(updatedUser));
-      localStorage.removeItem('eryza_wallet');
+  const register = async (data: { name: string; email: string; password: string; confirmPassword: string }) => {
+    try {
+      const response = await authService.register(data);
+      if (response.success && response.user) {
+        setUser(response.user);
+        localStorage.setItem('authUser', JSON.stringify(response.user));
+        return { success: true };
+      } else {
+        return { success: false, message: response.error || 'Registration failed' };
+      }
+    } catch (error) {
+      console.error('Registration error:', error);
+      return { success: false, message: 'Network error. Please try again.' };
     }
   };
 
-  const switchRole = (role: 'user' | 'provider') => {
-    if (user) {
-      const updatedUser = { ...user, role, stakedTokens: role === 'provider' ? 500 : 0 };
-      setUser(updatedUser);
-      localStorage.setItem('eryza_user', JSON.stringify(updatedUser));
+  const logout = async () => {
+    try {
+      await authService.logout();
+      setUser(null);
+      localStorage.removeItem('authUser');
+    } catch (error) {
+      console.error('Logout error:', error);
+      // Clear local state even if server call fails
+      setUser(null);
+      localStorage.removeItem('authUser');
     }
   };
 
-  const updateUser = (updates: Partial<User>) => {
-    if (user) {
-      const updatedUser = { ...user, ...updates };
-      setUser(updatedUser);
-      localStorage.setItem('eryza_user', JSON.stringify(updatedUser));
+  const updateUser = async (updates: Partial<User>) => {
+    try {
+      const response = await authService.updateProfile(updates);
+      if (response.success && response.user) {
+        setUser(response.user);
+        localStorage.setItem('authUser', JSON.stringify(response.user));
+        return { success: true };
+      } else {
+        return { success: false, message: response.error || 'Update failed' };
+      }
+    } catch (error) {
+      console.error('Update user error:', error);
+      return { success: false, message: 'Network error. Please try again.' };
     }
   };
 
   return (
     <AuthContext.Provider value={{
       user,
+      loading,
       login,
+      register,
       logout,
-      connectWallet,
-      disconnectWallet,
-      switchRole,
       updateUser
     }}>
       {children}

@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { motion } from 'framer-motion';
+import { ethers } from 'ethers';
 import { 
   TrendingUp, 
   Zap, 
@@ -12,58 +13,105 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useJobs } from '../contexts/JobsContext';
+import { useWeb3 } from '../contexts/Web3Context';
+import { useRole } from '../contexts/RoleContext';
+import WalletConnection from '../components/WalletConnection';
 import Card from '../components/UI/Card';
 import Button from '../components/UI/Button';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 
 const Dashboard: React.FC = () => {
   const { user } = useAuth();
-  const { jobs, myJobs } = useJobs();
+  const { userRole } = useRole();
+  const { myJobs } = useJobs();
+  const { 
+    isConnected, 
+    userAddress, 
+    balance, 
+    availableNodes,
+    userJobs,
+    refreshData,
+    loading,
+    error: web3Error 
+  } = useWeb3();
 
-  // Mock data for charts
+  useEffect(() => {
+    if (isConnected && userAddress) {
+      refreshData();
+    }
+  }, [isConnected, userAddress, refreshData]);
+
+  // Use blockchain data when available, otherwise fall back to context data
+  const activeJobs = isConnected ? userJobs : myJobs;
+  const totalProviders = availableNodes.length;
+  const tokenBalance = balance?.balance || '0';
+  const isDataLoading = loading;
+
+  // Activity data based on real blockchain metrics only
   const activityData = [
-    { name: 'Jan', jobs: 12, earnings: 150 },
-    { name: 'Feb', jobs: 19, earnings: 280 },
-    { name: 'Mar', jobs: 8, earnings: 120 },
-    { name: 'Apr', jobs: 15, earnings: 220 },
-    { name: 'May', jobs: 22, earnings: 350 },
-    { name: 'Jun', jobs: 18, earnings: 290 },
+    { name: 'Jan', jobs: 0, earnings: 0 },
+    { name: 'Feb', jobs: 0, earnings: 0 },
+    { name: 'Mar', jobs: 0, earnings: 0 },
+    { name: 'Apr', jobs: 0, earnings: 0 },
+    { name: 'May', jobs: 0, earnings: 0 },
+    { name: 'Jun', jobs: isConnected ? userJobs.length : 0, earnings: isConnected ? parseFloat(tokenBalance) : 0 },
   ];
 
-  const jobStatusData = [
-    { name: 'Completed', value: 45, color: '#10B981' },
-    { name: 'Running', value: 25, color: '#00D1FF' },
-    { name: 'Pending', value: 20, color: '#F59E0B' },
-    { name: 'Failed', value: 10, color: '#EF4444' },
+  const jobStatusData = isConnected && userJobs.length > 0 ? [
+    { 
+      name: 'Completed', 
+      value: userJobs.filter(job => job.status === 8).length, 
+      color: '#10B981' 
+    },
+    { 
+      name: 'Running', 
+      value: userJobs.filter(job => job.status === 2).length, 
+      color: '#00D1FF' 
+    },
+    { 
+      name: 'Pending', 
+      value: userJobs.filter(job => job.status === 0).length, 
+      color: '#F59E0B' 
+    },
+    { 
+      name: 'Assigned', 
+      value: userJobs.filter(job => job.status === 1).length, 
+      color: '#8B5CF6' 
+    },
+  ].filter(item => item.value > 0) : [
+    { name: 'No Data', value: 1, color: '#6B7280' }
   ];
 
   const getStatsForRole = () => {
-    if (user?.role === 'provider') {
+    if (userRole === 'provider') {
+      const completedJobs = isConnected ? activeJobs.filter(job => job.status === 8).length : 0;
+      const runningJobs = isConnected ? activeJobs.filter(job => job.status === 2).length : 0;
+      
       return [
         {
           title: 'Jobs Completed',
-          value: user.completedJobs,
+          value: completedJobs,
           icon: CheckCircle,
           color: 'text-green-500',
           bgColor: 'bg-green-100 dark:bg-green-900',
         },
         {
           title: 'Active Jobs',
-          value: myJobs.filter(job => job.status === 'running').length,
+          value: runningJobs,
           icon: Zap,
           color: 'text-neon-blue',
           bgColor: 'bg-blue-100 dark:bg-blue-900',
         },
         {
           title: 'Tokens Earned',
-          value: user.tokensEarned,
+          value: isConnected ? `${parseFloat(tokenBalance).toFixed(2)} ERYZA` : '0 ERYZA',
           icon: Wallet,
           color: 'text-yellow-500',
           bgColor: 'bg-yellow-100 dark:bg-yellow-900',
         },
         {
-          title: 'Reputation',
-          value: `${user.reputation}/5`,
+          title: 'Compute Nodes',
+          value: isConnected ? totalProviders : 0,
           icon: TrendingUp,
           color: 'text-purple-500',
           bgColor: 'bg-purple-100 dark:bg-purple-900',
@@ -71,31 +119,35 @@ const Dashboard: React.FC = () => {
       ];
     }
 
+    const submittedJobs = isConnected ? activeJobs.length : 0;
+    const runningJobs = isConnected ? activeJobs.filter(job => job.status === 2).length : 0;
+    const completedJobs = isConnected ? activeJobs.filter(job => job.status === 8).length : 0;
+
     return [
       {
         title: 'Jobs Submitted',
-        value: myJobs.length,
+        value: submittedJobs,
         icon: BarChart3,
         color: 'text-blue-500',
         bgColor: 'bg-blue-100 dark:bg-blue-900',
       },
       {
         title: 'Running Jobs',
-        value: myJobs.filter(job => job.status === 'running').length,
+        value: runningJobs,
         icon: Clock,
         color: 'text-orange-500',
         bgColor: 'bg-orange-100 dark:bg-orange-900',
       },
       {
         title: 'Completed',
-        value: myJobs.filter(job => job.status === 'completed').length,
+        value: completedJobs,
         icon: CheckCircle,
         color: 'text-green-500',
         bgColor: 'bg-green-100 dark:bg-green-900',
       },
       {
         title: 'Token Balance',
-        value: user?.tokenBalance || 0,
+        value: isConnected ? `${parseFloat(tokenBalance).toFixed(2)} ERYZA` : '0 ERYZA',
         icon: Wallet,
         color: 'text-neon-blue',
         bgColor: 'bg-blue-100 dark:bg-blue-900',
@@ -115,24 +167,35 @@ const Dashboard: React.FC = () => {
       >
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-            Welcome back, {user?.email}
+            Welcome back, {userAddress ? `${userAddress.slice(0, 6)}...${userAddress.slice(-4)}` : user?.email}
           </h1>
           <p className="text-gray-600 dark:text-gray-400">
-            {user?.role === 'provider' 
+            {userRole === 'provider' 
               ? 'Monitor your compute jobs and earnings' 
               : 'Manage your AI compute jobs and submissions'
             }
           </p>
+          {web3Error && (
+            <p className="text-red-500 text-sm mt-1">
+              Blockchain Error: {web3Error}
+            </p>
+          )}
         </div>
         
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center space-x-4">
+          <WalletConnection />
           <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
-            user?.role === 'provider' 
+            userRole === 'provider' 
               ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
               : 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
           }`}>
-            {user?.role === 'provider' ? '🛡️ Provider' : '👤 User'}
+            {userRole === 'provider' ? '🛡️ Provider' : '👤 Client'}
           </span>
+          {isConnected && (
+            <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+              🔗 Blockchain Connected
+            </span>
+          )}
         </div>
       </motion.div>
 
@@ -175,7 +238,7 @@ const Dashboard: React.FC = () => {
         >
           <Card className="p-6">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-              {user?.role === 'provider' ? 'Monthly Earnings' : 'Job Activity'}
+              {userRole === 'provider' ? 'Monthly Earnings' : 'Job Activity'}
             </h3>
             <div className="h-80">
               <ResponsiveContainer width="100%" height="100%">
@@ -196,7 +259,7 @@ const Dashboard: React.FC = () => {
                   />
                   <Line 
                     type="monotone" 
-                    dataKey={user?.role === 'provider' ? 'earnings' : 'jobs'} 
+                    dataKey={userRole === 'provider' ? 'earnings' : 'jobs'} 
                     stroke="#00D1FF" 
                     strokeWidth={3}
                     dot={{ fill: '#00D1FF', strokeWidth: 2 }}
@@ -275,59 +338,99 @@ const Dashboard: React.FC = () => {
           </div>
           
           <div className="space-y-4">
-            {myJobs.slice(0, 5).map((job) => (
-              <div
-                key={job.id}
-                className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 rounded-lg"
-              >
-                <div className="flex items-center space-x-4">
-                  <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                    job.status === 'completed' ? 'bg-green-100 text-green-600 dark:bg-green-900' :
-                    job.status === 'running' ? 'bg-blue-100 text-blue-600 dark:bg-blue-900' :
-                    job.status === 'assigned' ? 'bg-yellow-100 text-yellow-600 dark:bg-yellow-900' :
-                    'bg-gray-100 text-gray-600 dark:bg-gray-700'
-                  }`}>
-                    {job.status === 'completed' ? <CheckCircle size={20} /> :
-                     job.status === 'running' ? <Zap size={20} /> :
-                     job.status === 'assigned' ? <Clock size={20} /> :
-                     <AlertTriangle size={20} />}
-                  </div>
-                  <div>
-                    <p className="font-medium text-gray-900 dark:text-white">
-                      {job.name}
-                    </p>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">
-                      {job.computeSize} • {job.reward} ETZ
-                    </p>
-                  </div>
-                </div>
-                
-                <div className="flex items-center space-x-4">
-                  <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-                    job.status === 'completed' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' :
-                    job.status === 'running' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' :
-                    job.status === 'assigned' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200' :
-                    'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200'
-                  }`}>
-                    {job.status.replace('_', ' ')}
-                  </span>
-                  
-                  {job.progress > 0 && (
-                    <div className="w-20 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                      <div 
-                        className="bg-neon-blue h-2 rounded-full transition-all duration-300"
-                        style={{ width: `${job.progress}%` }}
-                      />
+            {activeJobs.slice(0, 5).map((job, index) => {
+              // Handle both blockchain jobs (JobInfo) and context jobs (Job)
+              const isBlockchainJob = isConnected && 'nodeId' in job;
+              
+              const jobId = isBlockchainJob 
+                ? index 
+                : (job as any).id || index;
+              
+              const jobName = isBlockchainJob 
+                ? (job as any).jobType || `Compute Job ${jobId}`
+                : (job as any).name || `Job ${jobId}`;
+              
+              const jobStatus = isBlockchainJob 
+                ? (job.status === 8 ? 'completed' : job.status === 2 ? 'running' : job.status === 1 ? 'assigned' : 'pending')
+                : job.status;
+              
+              const jobReward = isBlockchainJob 
+                ? ((job as any).totalCost ? `${ethers.formatEther((job as any).totalCost)} AVAX` : '0 AVAX')
+                : ((job as any).reward || '0 ERYZA');
+              
+              const jobSize = isBlockchainJob 
+                ? ((job as any).jobConfig || 'Standard')
+                : ((job as any).computeSize || 'Standard');
+              
+              return (
+                <div
+                  key={jobId}
+                  className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 rounded-lg"
+                >
+                  <div className="flex items-center space-x-4">
+                    <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                      jobStatus === 'completed' ? 'bg-green-100 text-green-600 dark:bg-green-900' :
+                      jobStatus === 'running' ? 'bg-blue-100 text-blue-600 dark:bg-blue-900' :
+                      jobStatus === 'assigned' ? 'bg-yellow-100 text-yellow-600 dark:bg-yellow-900' :
+                      'bg-gray-100 text-gray-600 dark:bg-gray-700'
+                    }`}>
+                      {jobStatus === 'completed' ? <CheckCircle size={20} /> :
+                       jobStatus === 'running' ? <Zap size={20} /> :
+                       jobStatus === 'assigned' ? <Clock size={20} /> :
+                       <AlertTriangle size={20} />}
                     </div>
-                  )}
+                    <div>
+                      <p className="font-medium text-gray-900 dark:text-white">
+                        {jobName}
+                      </p>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">
+                        {jobSize} • {jobReward}
+                      </p>
+                      {isBlockchainJob && (job as any).nodeId && (
+                        <p className="text-xs text-gray-400">
+                          Node ID: {(job as any).nodeId}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center space-x-4">
+                    <span className={`px-2 py-1 text-xs font-medium rounded-full ${
+                      jobStatus === 'completed' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' :
+                      jobStatus === 'running' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' :
+                      jobStatus === 'assigned' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200' :
+                      'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200'
+                    }`}>
+                      {typeof jobStatus === 'string' ? jobStatus.replace('_', ' ') : jobStatus}
+                    </span>
+                    
+                    {!isBlockchainJob && (job as any).progress > 0 && (
+                      <div className="w-20 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                        <div 
+                          className="bg-neon-blue h-2 rounded-full transition-all duration-300"
+                          style={{ width: `${(job as any).progress}%` }}
+                        />
+                      </div>
+                    )}
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
             
-            {myJobs.length === 0 && (
+            {activeJobs.length === 0 && !isDataLoading && (
               <div className="text-center py-8 text-gray-500 dark:text-gray-400">
                 <Users size={48} className="mx-auto mb-4 opacity-50" />
-                <p>No jobs yet. {user?.role === 'user' ? 'Submit your first job!' : 'Start accepting jobs!'}</p>
+                <p>No jobs yet. {userRole === 'client' ? 'Submit your first job!' : 'Start accepting jobs!'}</p>
+                {!isConnected && (
+                  <p className="text-sm mt-2">Connect your wallet to see blockchain jobs</p>
+                )}
+              </div>
+            )}
+            
+            {isDataLoading && (
+              <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-neon-blue mx-auto mb-4"></div>
+                <p>Loading blockchain data...</p>
               </div>
             )}
           </div>

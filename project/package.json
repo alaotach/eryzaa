@@ -1,5 +1,5 @@
 {
-  "name": "eryzaa-website",
+  "name": "eryza-website",
   "private": true,
   "version": "1.0.0",
   "type": "module",
@@ -12,6 +12,7 @@
   "dependencies": {
     "@supabase/supabase-js": "^2.57.4",
     "@types/react-router-dom": "^5.3.3",
+    "ethers": "^6.15.0",
     "framer-motion": "^12.23.16",
     "lucide-react": "^0.344.0",
     "react": "^18.3.1",

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 
-// Mock Core Wallet SDK integration
-// Replace this with actual Core Wallet SDK calls in production
+// Core Wallet SDK integration placeholder
+// This hook is designed to integrate with Core Wallet when available
 export const useCoreWallet = () => {
   const [isConnected, setIsConnected] = useState(false);
   const [address, setAddress] = useState<string | null>(null);
@@ -10,15 +10,8 @@ export const useCoreWallet = () => {
   const connect = async () => {
     setIsLoading(true);
     try {
-      // Mock connection delay
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      // Mock wallet address generation
-      const mockAddress = '0x' + Math.random().toString(16).substr(2, 40);
-      setAddress(mockAddress);
-      setIsConnected(true);
-      
-      return mockAddress;
+      // TODO: Implement actual Core Wallet SDK integration
+      throw new Error('Core Wallet integration not yet implemented. Please use MetaMask or other Web3 wallet.');
     } catch (error) {
       console.error('Failed to connect wallet:', error);
       throw error;
@@ -32,17 +25,13 @@ export const useCoreWallet = () => {
     setIsConnected(false);
   };
 
-  const sendTransaction = async (to: string, amount: number) => {
+  const sendTransaction = async (_to: string, _amount: number) => {
     if (!isConnected) throw new Error('Wallet not connected');
     
     setIsLoading(true);
     try {
-      // Mock transaction delay
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      // Mock transaction hash
-      const txHash = '0x' + Math.random().toString(16).substr(2, 64);
-      return { hash: txHash, success: true };
+      // TODO: Implement actual transaction sending
+      throw new Error('Core Wallet transaction not yet implemented');
     } catch (error) {
       console.error('Transaction failed:', error);
       throw error;
@@ -54,8 +43,8 @@ export const useCoreWallet = () => {
   const getBalance = async () => {
     if (!isConnected) return 0;
     
-    // Mock balance
-    return Math.floor(Math.random() * 10000) + 1000;
+    // TODO: Implement actual balance fetching
+    return 0;
   };
 
   return {

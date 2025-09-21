@@ -1,0 +1,1534 @@
+{
+  "address": "0x4e093Ee1fF01320d0dDd879032B0A80D28574D84",
+  "abi": [
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_paymentToken",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "constructor"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "owner",
+          "type": "address"
+        }
+      ],
+      "name": "OwnableInvalidOwner",
+      "type": "error"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "account",
+          "type": "address"
+        }
+      ],
+      "name": "OwnableUnauthorizedAccount",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "ReentrancyGuardReentrantCall",
+      "type": "error"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "token",
+          "type": "address"
+        }
+      ],
+      "name": "SafeERC20FailedOperation",
+      "type": "error"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "jobId",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "endTime",
+          "type": "uint256"
+        }
+      ],
+      "name": "ComputeJobCompleted",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "jobId",
+          "type": "uint256"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "client",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "nodeId",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "duration",
+          "type": "uint256"
+        }
+      ],
+      "name": "ComputeJobCreated",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "jobId",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "startTime",
+          "type": "uint256"
+        }
+      ],
+      "name": "ComputeJobStarted",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "provider",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "nodeId",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "pricePerHour",
+          "type": "uint256"
+        }
+      ],
+      "name": "ComputeNodeRegistered",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "jobId",
+          "type": "uint256"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "raiser",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "string",
+          "name": "reason",
+          "type": "string"
+        }
+      ],
+      "name": "DisputeRaised",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "jobId",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "bool",
+          "name": "favorProvider",
+          "type": "bool"
+        }
+      ],
+      "name": "DisputeResolved",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "previousOwner",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "newOwner",
+          "type": "address"
+        }
+      ],
+      "name": "OwnershipTransferred",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "jobId",
+          "type": "uint256"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "provider",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "amount",
+          "type": "uint256"
+        }
+      ],
+      "name": "PaymentReleased",
+      "type": "event"
+    },
+    {
+      "inputs": [],
+      "name": "BASIS_POINTS",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "PLATFORM_FEE_PERCENT",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "jobId",
+          "type": "uint256"
+        }
+      ],
+      "name": "cancelJob",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "name": "clientJobs",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "jobId",
+          "type": "uint256"
+        }
+      ],
+      "name": "completeComputeJob",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "name": "computeJobs",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "nodeId",
+          "type": "uint256"
+        },
+        {
+          "internalType": "address",
+          "name": "client",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "provider",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "duration",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "totalCost",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "startTime",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "endTime",
+          "type": "uint256"
+        },
+        {
+          "internalType": "enum EryzaComputeMarketplace.JobStatus",
+          "name": "status",
+          "type": "uint8"
+        },
+        {
+          "internalType": "string",
+          "name": "jobType",
+          "type": "string"
+        },
+        {
+          "internalType": "string",
+          "name": "jobConfig",
+          "type": "string"
+        },
+        {
+          "internalType": "bool",
+          "name": "disputed",
+          "type": "bool"
+        },
+        {
+          "internalType": "address",
+          "name": "disputer",
+          "type": "address"
+        },
+        {
+          "internalType": "string",
+          "name": "disputeReason",
+          "type": "string"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "name": "computeNodes",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "provider",
+          "type": "address"
+        },
+        {
+          "internalType": "string",
+          "name": "nodeType",
+          "type": "string"
+        },
+        {
+          "internalType": "uint256",
+          "name": "cpuCores",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "memoryGB",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "gpuCount",
+          "type": "uint256"
+        },
+        {
+          "internalType": "string",
+          "name": "gpuType",
+          "type": "string"
+        },
+        {
+          "internalType": "uint256",
+          "name": "pricePerHour",
+          "type": "uint256"
+        },
+        {
+          "internalType": "bool",
+          "name": "available",
+          "type": "bool"
+        },
+        {
+          "internalType": "uint256",
+          "name": "totalJobs",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "successfulJobs",
+          "type": "uint256"
+        },
+        {
+          "internalType": "string",
+          "name": "endpoint",
+          "type": "string"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "nodeId",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "duration",
+          "type": "uint256"
+        },
+        {
+          "internalType": "string",
+          "name": "jobType",
+          "type": "string"
+        },
+        {
+          "internalType": "string",
+          "name": "jobConfig",
+          "type": "string"
+        }
+      ],
+      "name": "createComputeJob",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "disputeTimeWindow",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "token",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "amount",
+          "type": "uint256"
+        }
+      ],
+      "name": "emergencyWithdraw",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "string",
+          "name": "nodeType",
+          "type": "string"
+        }
+      ],
+      "name": "getAvailableNodes",
+      "outputs": [
+        {
+          "internalType": "uint256[]",
+          "name": "",
+          "type": "uint256[]"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "client",
+          "type": "address"
+        }
+      ],
+      "name": "getClientJobs",
+      "outputs": [
+        {
+          "internalType": "uint256[]",
+          "name": "",
+          "type": "uint256[]"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "jobId",
+          "type": "uint256"
+        }
+      ],
+      "name": "getJobInfo",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "uint256",
+              "name": "nodeId",
+              "type": "uint256"
+            },
+            {
+              "internalType": "address",
+              "name": "client",
+              "type": "address"
+            },
+            {
+              "internalType": "address",
+              "name": "provider",
+              "type": "address"
+            },
+            {
+              "internalType": "uint256",
+              "name": "duration",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "totalCost",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "startTime",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "endTime",
+              "type": "uint256"
+            },
+            {
+              "internalType": "enum EryzaComputeMarketplace.JobStatus",
+              "name": "status",
+              "type": "uint8"
+            },
+            {
+              "internalType": "string",
+              "name": "jobType",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "jobConfig",
+              "type": "string"
+            },
+            {
+              "internalType": "bool",
+              "name": "disputed",
+              "type": "bool"
+            },
+            {
+              "internalType": "address",
+              "name": "disputer",
+              "type": "address"
+            },
+            {
+              "internalType": "string",
+              "name": "disputeReason",
+              "type": "string"
+            }
+          ],
+          "internalType": "struct EryzaComputeMarketplace.ComputeJob",
+          "name": "",
+          "type": "tuple"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "nodeId",
+          "type": "uint256"
+        }
+      ],
+      "name": "getNodeInfo",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "address",
+              "name": "provider",
+              "type": "address"
+            },
+            {
+              "internalType": "string",
+              "name": "nodeType",
+              "type": "string"
+            },
+            {
+              "internalType": "uint256",
+              "name": "cpuCores",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "memoryGB",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "gpuCount",
+              "type": "uint256"
+            },
+            {
+              "internalType": "string",
+              "name": "gpuType",
+              "type": "string"
+            },
+            {
+              "internalType": "uint256",
+              "name": "pricePerHour",
+              "type": "uint256"
+            },
+            {
+              "internalType": "bool",
+              "name": "available",
+              "type": "bool"
+            },
+            {
+              "internalType": "uint256",
+              "name": "totalJobs",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "successfulJobs",
+              "type": "uint256"
+            },
+            {
+              "internalType": "string",
+              "name": "endpoint",
+              "type": "string"
+            }
+          ],
+          "internalType": "struct EryzaComputeMarketplace.ComputeNode",
+          "name": "",
+          "type": "tuple"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "provider",
+          "type": "address"
+        }
+      ],
+      "name": "getProviderNodes",
+      "outputs": [
+        {
+          "internalType": "uint256[]",
+          "name": "",
+          "type": "uint256[]"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "name": "jobEscrow",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "name": "nodeActiveJobs",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "owner",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "paymentToken",
+      "outputs": [
+        {
+          "internalType": "contract IERC20",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "name": "providerNodes",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "jobId",
+          "type": "uint256"
+        },
+        {
+          "internalType": "string",
+          "name": "reason",
+          "type": "string"
+        }
+      ],
+      "name": "raiseDispute",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "string",
+          "name": "nodeType",
+          "type": "string"
+        },
+        {
+          "internalType": "uint256",
+          "name": "cpuCores",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "memoryGB",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "gpuCount",
+          "type": "uint256"
+        },
+        {
+          "internalType": "string",
+          "name": "gpuType",
+          "type": "string"
+        },
+        {
+          "internalType": "uint256",
+          "name": "pricePerHour",
+          "type": "uint256"
+        },
+        {
+          "internalType": "string",
+          "name": "endpoint",
+          "type": "string"
+        }
+      ],
+      "name": "registerComputeNode",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "jobId",
+          "type": "uint256"
+        }
+      ],
+      "name": "releasePayment",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "renounceOwnership",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "jobId",
+          "type": "uint256"
+        },
+        {
+          "internalType": "bool",
+          "name": "favorProvider",
+          "type": "bool"
+        }
+      ],
+      "name": "resolveDispute",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "jobId",
+          "type": "uint256"
+        }
+      ],
+      "name": "startComputeJob",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "newOwner",
+          "type": "address"
+        }
+      ],
+      "name": "transferOwnership",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "newWindow",
+          "type": "uint256"
+        }
+      ],
+      "name": "updateDisputeTimeWindow",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "nodeId",
+          "type": "uint256"
+        },
+        {
+          "internalType": "bool",
+          "name": "available",
+          "type": "bool"
+        }
+      ],
+      "name": "updateNodeAvailability",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "nodeId",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "newPrice",
+          "type": "uint256"
+        }
+      ],
+      "name": "updateNodePrice",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "newFeePercent",
+          "type": "uint256"
+        }
+      ],
+      "name": "updatePlatformFee",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
+  ],
+  "transactionHash": "0xefdea9b358952df8512c2672c59657761e56cbd87d7eaadda9657815acff0bb2",
+  "receipt": {
+    "to": null,
+    "from": "0x63647535E39f5aD0FcaB81a65db9B07746E0B8dD",
+    "contractAddress": "0x4e093Ee1fF01320d0dDd879032B0A80D28574D84",
+    "transactionIndex": 0,
+    "gasUsed": "2500576",
+    "logsBloom": "0x00200000000000000000000000000000400000000000000000800000000000000000000000000000000000000008000000000000000000000000000000000000000000000000000000000000000200000001000000000000000000000000000004000000020000000000000000000800000000000000000000000000000000400000000000000000000000000000000000000000000000000000000000000000000000000008000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000000000",
+    "blockHash": "0x820075ac5da2c313c5f863e5da6a32ea8f669b6339ee08b92dec6d3ddad1a94e",
+    "transactionHash": "0xefdea9b358952df8512c2672c59657761e56cbd87d7eaadda9657815acff0bb2",
+    "logs": [
+      {
+        "transactionIndex": 0,
+        "blockNumber": 46185976,
+        "transactionHash": "0xefdea9b358952df8512c2672c59657761e56cbd87d7eaadda9657815acff0bb2",
+        "address": "0x4e093Ee1fF01320d0dDd879032B0A80D28574D84",
+        "topics": [
+          "0x8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0",
+          "0x0000000000000000000000000000000000000000000000000000000000000000",
+          "0x00000000000000000000000063647535e39f5ad0fcab81a65db9b07746e0b8dd"
+        ],
+        "data": "0x",
+        "logIndex": 0,
+        "blockHash": "0x820075ac5da2c313c5f863e5da6a32ea8f669b6339ee08b92dec6d3ddad1a94e"
+      }
+    ],
+    "blockNumber": 46185976,
+    "cumulativeGasUsed": "2500576",
+    "status": 1,
+    "byzantium": true
+  },
+  "args": [
+    "0xB02A143e4CF3Cca229897D7FF9ddfb78405c7152"
+  ],
+  "numDeployments": 1,
+  "solcInputHash": "a87aaf5b988b40508ae2a4399b7f2ffd",
+  "metadata": "{\"compiler\":{\"version\":\"0.8.20+commit.a1b79de6\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_paymentToken\",\"type\":\"address\"}],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"}],\"name\":\"OwnableInvalidOwner\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"OwnableUnauthorizedAccount\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"ReentrancyGuardReentrantCall\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"}],\"name\":\"SafeERC20FailedOperation\",\"type\":\"error\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"jobId\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"endTime\",\"type\":\"uint256\"}],\"name\":\"ComputeJobCompleted\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"jobId\",\"type\":\"uint256\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"client\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"nodeId\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"duration\",\"type\":\"uint256\"}],\"name\":\"ComputeJobCreated\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"jobId\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"startTime\",\"type\":\"uint256\"}],\"name\":\"ComputeJobStarted\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"provider\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"nodeId\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"pricePerHour\",\"type\":\"uint256\"}],\"name\":\"ComputeNodeRegistered\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"jobId\",\"type\":\"uint256\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"raiser\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"string\",\"name\":\"reason\",\"type\":\"string\"}],\"name\":\"DisputeRaised\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"jobId\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"bool\",\"name\":\"favorProvider\",\"type\":\"bool\"}],\"name\":\"DisputeResolved\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"previousOwner\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"OwnershipTransferred\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"jobId\",\"type\":\"uint256\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"provider\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"PaymentReleased\",\"type\":\"event\"},{\"inputs\":[],\"name\":\"BASIS_POINTS\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"PLATFORM_FEE_PERCENT\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"jobId\",\"type\":\"uint256\"}],\"name\":\"cancelJob\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"name\":\"clientJobs\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"jobId\",\"type\":\"uint256\"}],\"name\":\"completeComputeJob\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"name\":\"computeJobs\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"nodeId\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"client\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"provider\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"duration\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"totalCost\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"startTime\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"endTime\",\"type\":\"uint256\"},{\"internalType\":\"enum EryzaComputeMarketplace.JobStatus\",\"name\":\"status\",\"type\":\"uint8\"},{\"internalType\":\"string\",\"name\":\"jobType\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"jobConfig\",\"type\":\"string\"},{\"internalType\":\"bool\",\"name\":\"disputed\",\"type\":\"bool\"},{\"internalType\":\"address\",\"name\":\"disputer\",\"type\":\"address\"},{\"internalType\":\"string\",\"name\":\"disputeReason\",\"type\":\"string\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"name\":\"computeNodes\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"provider\",\"type\":\"address\"},{\"internalType\":\"string\",\"name\":\"nodeType\",\"type\":\"string\"},{\"internalType\":\"uint256\",\"name\":\"cpuCores\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"memoryGB\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"gpuCount\",\"type\":\"uint256\"},{\"internalType\":\"string\",\"name\":\"gpuType\",\"type\":\"string\"},{\"internalType\":\"uint256\",\"name\":\"pricePerHour\",\"type\":\"uint256\"},{\"internalType\":\"bool\",\"name\":\"available\",\"type\":\"bool\"},{\"internalType\":\"uint256\",\"name\":\"totalJobs\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"successfulJobs\",\"type\":\"uint256\"},{\"internalType\":\"string\",\"name\":\"endpoint\",\"type\":\"string\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"nodeId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"duration\",\"type\":\"uint256\"},{\"internalType\":\"string\",\"name\":\"jobType\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"jobConfig\",\"type\":\"string\"}],\"name\":\"createComputeJob\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"disputeTimeWindow\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"emergencyWithdraw\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"nodeType\",\"type\":\"string\"}],\"name\":\"getAvailableNodes\",\"outputs\":[{\"internalType\":\"uint256[]\",\"name\":\"\",\"type\":\"uint256[]\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"client\",\"type\":\"address\"}],\"name\":\"getClientJobs\",\"outputs\":[{\"internalType\":\"uint256[]\",\"name\":\"\",\"type\":\"uint256[]\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"jobId\",\"type\":\"uint256\"}],\"name\":\"getJobInfo\",\"outputs\":[{\"components\":[{\"internalType\":\"uint256\",\"name\":\"nodeId\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"client\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"provider\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"duration\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"totalCost\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"startTime\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"endTime\",\"type\":\"uint256\"},{\"internalType\":\"enum EryzaComputeMarketplace.JobStatus\",\"name\":\"status\",\"type\":\"uint8\"},{\"internalType\":\"string\",\"name\":\"jobType\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"jobConfig\",\"type\":\"string\"},{\"internalType\":\"bool\",\"name\":\"disputed\",\"type\":\"bool\"},{\"internalType\":\"address\",\"name\":\"disputer\",\"type\":\"address\"},{\"internalType\":\"string\",\"name\":\"disputeReason\",\"type\":\"string\"}],\"internalType\":\"struct EryzaComputeMarketplace.ComputeJob\",\"name\":\"\",\"type\":\"tuple\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"nodeId\",\"type\":\"uint256\"}],\"name\":\"getNodeInfo\",\"outputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"provider\",\"type\":\"address\"},{\"internalType\":\"string\",\"name\":\"nodeType\",\"type\":\"string\"},{\"internalType\":\"uint256\",\"name\":\"cpuCores\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"memoryGB\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"gpuCount\",\"type\":\"uint256\"},{\"internalType\":\"string\",\"name\":\"gpuType\",\"type\":\"string\"},{\"internalType\":\"uint256\",\"name\":\"pricePerHour\",\"type\":\"uint256\"},{\"internalType\":\"bool\",\"name\":\"available\",\"type\":\"bool\"},{\"internalType\":\"uint256\",\"name\":\"totalJobs\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"successfulJobs\",\"type\":\"uint256\"},{\"internalType\":\"string\",\"name\":\"endpoint\",\"type\":\"string\"}],\"internalType\":\"struct EryzaComputeMarketplace.ComputeNode\",\"name\":\"\",\"type\":\"tuple\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"provider\",\"type\":\"address\"}],\"name\":\"getProviderNodes\",\"outputs\":[{\"internalType\":\"uint256[]\",\"name\":\"\",\"type\":\"uint256[]\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"name\":\"jobEscrow\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"name\":\"nodeActiveJobs\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"owner\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"paymentToken\",\"outputs\":[{\"internalType\":\"contract IERC20\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"name\":\"providerNodes\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"jobId\",\"type\":\"uint256\"},{\"internalType\":\"string\",\"name\":\"reason\",\"type\":\"string\"}],\"name\":\"raiseDispute\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"nodeType\",\"type\":\"string\"},{\"internalType\":\"uint256\",\"name\":\"cpuCores\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"memoryGB\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"gpuCount\",\"type\":\"uint256\"},{\"internalType\":\"string\",\"name\":\"gpuType\",\"type\":\"string\"},{\"internalType\":\"uint256\",\"name\":\"pricePerHour\",\"type\":\"uint256\"},{\"internalType\":\"string\",\"name\":\"endpoint\",\"type\":\"string\"}],\"name\":\"registerComputeNode\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"jobId\",\"type\":\"uint256\"}],\"name\":\"releasePayment\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"renounceOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"jobId\",\"type\":\"uint256\"},{\"internalType\":\"bool\",\"name\":\"favorProvider\",\"type\":\"bool\"}],\"name\":\"resolveDispute\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"jobId\",\"type\":\"uint256\"}],\"name\":\"startComputeJob\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"transferOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"newWindow\",\"type\":\"uint256\"}],\"name\":\"updateDisputeTimeWindow\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"nodeId\",\"type\":\"uint256\"},{\"internalType\":\"bool\",\"name\":\"available\",\"type\":\"bool\"}],\"name\":\"updateNodeAvailability\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"nodeId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"newPrice\",\"type\":\"uint256\"}],\"name\":\"updateNodePrice\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"newFeePercent\",\"type\":\"uint256\"}],\"name\":\"updatePlatformFee\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"details\":\"Smart contract for managing compute resource marketplace on Avalanche\",\"errors\":{\"OwnableInvalidOwner(address)\":[{\"details\":\"The owner is not a valid owner account. (eg. `address(0)`)\"}],\"OwnableUnauthorizedAccount(address)\":[{\"details\":\"The caller account is not authorized to perform an operation.\"}],\"ReentrancyGuardReentrantCall()\":[{\"details\":\"Unauthorized reentrant call.\"}],\"SafeERC20FailedOperation(address)\":[{\"details\":\"An operation with an ERC-20 token failed.\"}]},\"kind\":\"dev\",\"methods\":{\"cancelJob(uint256)\":{\"details\":\"Cancel job before it starts\"},\"completeComputeJob(uint256)\":{\"details\":\"Complete a compute job (called by client or automatically)\"},\"createComputeJob(uint256,uint256,string,string)\":{\"details\":\"Create a new compute job\"},\"emergencyWithdraw(address,uint256)\":{\"details\":\"Emergency withdrawal (only owner)\"},\"getAvailableNodes(string)\":{\"details\":\"Get available nodes by type\"},\"getClientJobs(address)\":{\"details\":\"Get client's jobs\"},\"getJobInfo(uint256)\":{\"details\":\"Get job information\"},\"getNodeInfo(uint256)\":{\"details\":\"Get node information\"},\"getProviderNodes(address)\":{\"details\":\"Get provider's nodes\"},\"owner()\":{\"details\":\"Returns the address of the current owner.\"},\"raiseDispute(uint256,string)\":{\"details\":\"Raise a dispute\"},\"registerComputeNode(string,uint256,uint256,uint256,string,uint256,string)\":{\"details\":\"Register a new compute node\"},\"releasePayment(uint256)\":{\"details\":\"Release payment to provider\"},\"renounceOwnership()\":{\"details\":\"Leaves the contract without owner. It will not be possible to call `onlyOwner` functions. Can only be called by the current owner. NOTE: Renouncing ownership will leave the contract without an owner, thereby disabling any functionality that is only available to the owner.\"},\"resolveDispute(uint256,bool)\":{\"details\":\"Resolve dispute (called by platform admin)\"},\"startComputeJob(uint256)\":{\"details\":\"Start a compute job (called by provider)\"},\"transferOwnership(address)\":{\"details\":\"Transfers ownership of the contract to a new account (`newOwner`). Can only be called by the current owner.\"},\"updateDisputeTimeWindow(uint256)\":{\"details\":\"Update dispute time window (only owner)\"},\"updateNodeAvailability(uint256,bool)\":{\"details\":\"Update compute node availability\"},\"updateNodePrice(uint256,uint256)\":{\"details\":\"Update compute node pricing\"},\"updatePlatformFee(uint256)\":{\"details\":\"Update platform fee (only owner)\"}},\"title\":\"EryzaComputeMarketplace\",\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"blockchain/contracts/EryzaComputeMarketplace.sol\":\"EryzaComputeMarketplace\"},\"evmVersion\":\"paris\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\",\"useLiteralContent\":true},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[],\"viaIR\":true},\"sources\":{\"@openzeppelin/contracts/access/Ownable.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\n// OpenZeppelin Contracts (last updated v5.0.0) (access/Ownable.sol)\\n\\npragma solidity ^0.8.20;\\n\\nimport {Context} from \\\"../utils/Context.sol\\\";\\n\\n/**\\n * @dev Contract module which provides a basic access control mechanism, where\\n * there is an account (an owner) that can be granted exclusive access to\\n * specific functions.\\n *\\n * The initial owner is set to the address provided by the deployer. This can\\n * later be changed with {transferOwnership}.\\n *\\n * This module is used through inheritance. It will make available the modifier\\n * `onlyOwner`, which can be applied to your functions to restrict their use to\\n * the owner.\\n */\\nabstract contract Ownable is Context {\\n    address private _owner;\\n\\n    /**\\n     * @dev The caller account is not authorized to perform an operation.\\n     */\\n    error OwnableUnauthorizedAccount(address account);\\n\\n    /**\\n     * @dev The owner is not a valid owner account. (eg. `address(0)`)\\n     */\\n    error OwnableInvalidOwner(address owner);\\n\\n    event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);\\n\\n    /**\\n     * @dev Initializes the contract setting the address provided by the deployer as the initial owner.\\n     */\\n    constructor(address initialOwner) {\\n        if (initialOwner == address(0)) {\\n            revert OwnableInvalidOwner(address(0));\\n        }\\n        _transferOwnership(initialOwner);\\n    }\\n\\n    /**\\n     * @dev Throws if called by any account other than the owner.\\n     */\\n    modifier onlyOwner() {\\n        _checkOwner();\\n        _;\\n    }\\n\\n    /**\\n     * @dev Returns the address of the current owner.\\n     */\\n    function owner() public view virtual returns (address) {\\n        return _owner;\\n    }\\n\\n    /**\\n     * @dev Throws if the sender is not the owner.\\n     */\\n    function _checkOwner() internal view virtual {\\n        if (owner() != _msgSender()) {\\n            revert OwnableUnauthorizedAccount(_msgSender());\\n        }\\n    }\\n\\n    /**\\n     * @dev Leaves the contract without owner. It will not be possible to call\\n     * `onlyOwner` functions. Can only be called by the current owner.\\n     *\\n     * NOTE: Renouncing ownership will leave the contract without an owner,\\n     * thereby disabling any functionality that is only available to the owner.\\n     */\\n    function renounceOwnership() public virtual onlyOwner {\\n        _transferOwnership(address(0));\\n    }\\n\\n    /**\\n     * @dev Transfers ownership of the contract to a new account (`newOwner`).\\n     * Can only be called by the current owner.\\n     */\\n    function transferOwnership(address newOwner) public virtual onlyOwner {\\n        if (newOwner == address(0)) {\\n            revert OwnableInvalidOwner(address(0));\\n        }\\n        _transferOwnership(newOwner);\\n    }\\n\\n    /**\\n     * @dev Transfers ownership of the contract to a new account (`newOwner`).\\n     * Internal function without access restriction.\\n     */\\n    function _transferOwnership(address newOwner) internal virtual {\\n        address oldOwner = _owner;\\n        _owner = newOwner;\\n        emit OwnershipTransferred(oldOwner, newOwner);\\n    }\\n}\\n\",\"keccak256\":\"0xff6d0bb2e285473e5311d9d3caacb525ae3538a80758c10649a4d61029b017bb\",\"license\":\"MIT\"},\"@openzeppelin/contracts/interfaces/IERC1363.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\n// OpenZeppelin Contracts (last updated v5.4.0) (interfaces/IERC1363.sol)\\n\\npragma solidity >=0.6.2;\\n\\nimport {IERC20} from \\\"./IERC20.sol\\\";\\nimport {IERC165} from \\\"./IERC165.sol\\\";\\n\\n/**\\n * @title IERC1363\\n * @dev Interface of the ERC-1363 standard as defined in the https://eips.ethereum.org/EIPS/eip-1363[ERC-1363].\\n *\\n * Defines an extension interface for ERC-20 tokens that supports executing code on a recipient contract\\n * after `transfer` or `transferFrom`, or code on a spender contract after `approve`, in a single transaction.\\n */\\ninterface IERC1363 is IERC20, IERC165 {\\n    /*\\n     * Note: the ERC-165 identifier for this interface is 0xb0202a11.\\n     * 0xb0202a11 ===\\n     *   bytes4(keccak256('transferAndCall(address,uint256)')) ^\\n     *   bytes4(keccak256('transferAndCall(address,uint256,bytes)')) ^\\n     *   bytes4(keccak256('transferFromAndCall(address,address,uint256)')) ^\\n     *   bytes4(keccak256('transferFromAndCall(address,address,uint256,bytes)')) ^\\n     *   bytes4(keccak256('approveAndCall(address,uint256)')) ^\\n     *   bytes4(keccak256('approveAndCall(address,uint256,bytes)'))\\n     */\\n\\n    /**\\n     * @dev Moves a `value` amount of tokens from the caller's account to `to`\\n     * and then calls {IERC1363Receiver-onTransferReceived} on `to`.\\n     * @param to The address which you want to transfer to.\\n     * @param value The amount of tokens to be transferred.\\n     * @return A boolean value indicating whether the operation succeeded unless throwing.\\n     */\\n    function transferAndCall(address to, uint256 value) external returns (bool);\\n\\n    /**\\n     * @dev Moves a `value` amount of tokens from the caller's account to `to`\\n     * and then calls {IERC1363Receiver-onTransferReceived} on `to`.\\n     * @param to The address which you want to transfer to.\\n     * @param value The amount of tokens to be transferred.\\n     * @param data Additional data with no specified format, sent in call to `to`.\\n     * @return A boolean value indicating whether the operation succeeded unless throwing.\\n     */\\n    function transferAndCall(address to, uint256 value, bytes calldata data) external returns (bool);\\n\\n    /**\\n     * @dev Moves a `value` amount of tokens from `from` to `to` using the allowance mechanism\\n     * and then calls {IERC1363Receiver-onTransferReceived} on `to`.\\n     * @param from The address which you want to send tokens from.\\n     * @param to The address which you want to transfer to.\\n     * @param value The amount of tokens to be transferred.\\n     * @return A boolean value indicating whether the operation succeeded unless throwing.\\n     */\\n    function transferFromAndCall(address from, address to, uint256 value) external returns (bool);\\n\\n    /**\\n     * @dev Moves a `value` amount of tokens from `from` to `to` using the allowance mechanism\\n     * and then calls {IERC1363Receiver-onTransferReceived} on `to`.\\n     * @param from The address which you want to send tokens from.\\n     * @param to The address which you want to transfer to.\\n     * @param value The amount of tokens to be transferred.\\n     * @param data Additional data with no specified format, sent in call to `to`.\\n     * @return A boolean value indicating whether the operation succeeded unless throwing.\\n     */\\n    function transferFromAndCall(address from, address to, uint256 value, bytes calldata data) external returns (bool);\\n\\n    /**\\n     * @dev Sets a `value` amount of tokens as the allowance of `spender` over the\\n     * caller's tokens and then calls {IERC1363Spender-onApprovalReceived} on `spender`.\\n     * @param spender The address which will spend the funds.\\n     * @param value The amount of tokens to be spent.\\n     * @return A boolean value indicating whether the operation succeeded unless throwing.\\n     */\\n    function approveAndCall(address spender, uint256 value) external returns (bool);\\n\\n    /**\\n     * @dev Sets a `value` amount of tokens as the allowance of `spender` over the\\n     * caller's tokens and then calls {IERC1363Spender-onApprovalReceived} on `spender`.\\n     * @param spender The address which will spend the funds.\\n     * @param value The amount of tokens to be spent.\\n     * @param data Additional data with no specified format, sent in call to `spender`.\\n     * @return A boolean value indicating whether the operation succeeded unless throwing.\\n     */\\n    function approveAndCall(address spender, uint256 value, bytes calldata data) external returns (bool);\\n}\\n\",\"keccak256\":\"0xd5ea07362ab630a6a3dee4285a74cf2377044ca2e4be472755ad64d7c5d4b69d\",\"license\":\"MIT\"},\"@openzeppelin/contracts/interfaces/IERC165.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\n// OpenZeppelin Contracts (last updated v5.4.0) (interfaces/IERC165.sol)\\n\\npragma solidity >=0.4.16;\\n\\nimport {IERC165} from \\\"../utils/introspection/IERC165.sol\\\";\\n\",\"keccak256\":\"0x0afcb7e740d1537b252cb2676f600465ce6938398569f09ba1b9ca240dde2dfc\",\"license\":\"MIT\"},\"@openzeppelin/contracts/interfaces/IERC20.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\n// OpenZeppelin Contracts (last updated v5.4.0) (interfaces/IERC20.sol)\\n\\npragma solidity >=0.4.16;\\n\\nimport {IERC20} from \\\"../token/ERC20/IERC20.sol\\\";\\n\",\"keccak256\":\"0x1a6221315ce0307746c2c4827c125d821ee796c74a676787762f4778671d4f44\",\"license\":\"MIT\"},\"@openzeppelin/contracts/token/ERC20/IERC20.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\n// OpenZeppelin Contracts (last updated v5.4.0) (token/ERC20/IERC20.sol)\\n\\npragma solidity >=0.4.16;\\n\\n/**\\n * @dev Interface of the ERC-20 standard as defined in the ERC.\\n */\\ninterface IERC20 {\\n    /**\\n     * @dev Emitted when `value` tokens are moved from one account (`from`) to\\n     * another (`to`).\\n     *\\n     * Note that `value` may be zero.\\n     */\\n    event Transfer(address indexed from, address indexed to, uint256 value);\\n\\n    /**\\n     * @dev Emitted when the allowance of a `spender` for an `owner` is set by\\n     * a call to {approve}. `value` is the new allowance.\\n     */\\n    event Approval(address indexed owner, address indexed spender, uint256 value);\\n\\n    /**\\n     * @dev Returns the value of tokens in existence.\\n     */\\n    function totalSupply() external view returns (uint256);\\n\\n    /**\\n     * @dev Returns the value of tokens owned by `account`.\\n     */\\n    function balanceOf(address account) external view returns (uint256);\\n\\n    /**\\n     * @dev Moves a `value` amount of tokens from the caller's account to `to`.\\n     *\\n     * Returns a boolean value indicating whether the operation succeeded.\\n     *\\n     * Emits a {Transfer} event.\\n     */\\n    function transfer(address to, uint256 value) external returns (bool);\\n\\n    /**\\n     * @dev Returns the remaining number of tokens that `spender` will be\\n     * allowed to spend on behalf of `owner` through {transferFrom}. This is\\n     * zero by default.\\n     *\\n     * This value changes when {approve} or {transferFrom} are called.\\n     */\\n    function allowance(address owner, address spender) external view returns (uint256);\\n\\n    /**\\n     * @dev Sets a `value` amount of tokens as the allowance of `spender` over the\\n     * caller's tokens.\\n     *\\n     * Returns a boolean value indicating whether the operation succeeded.\\n     *\\n     * IMPORTANT: Beware that changing an allowance with this method brings the risk\\n     * that someone may use both the old and the new allowance by unfortunate\\n     * transaction ordering. One possible solution to mitigate this race\\n     * condition is to first reduce the spender's allowance to 0 and set the\\n     * desired value afterwards:\\n     * https://github.com/ethereum/EIPs/issues/20#issuecomment-263524729\\n     *\\n     * Emits an {Approval} event.\\n     */\\n    function approve(address spender, uint256 value) external returns (bool);\\n\\n    /**\\n     * @dev Moves a `value` amount of tokens from `from` to `to` using the\\n     * allowance mechanism. `value` is then deducted from the caller's\\n     * allowance.\\n     *\\n     * Returns a boolean value indicating whether the operation succeeded.\\n     *\\n     * Emits a {Transfer} event.\\n     */\\n    function transferFrom(address from, address to, uint256 value) external returns (bool);\\n}\\n\",\"keccak256\":\"0x74ed01eb66b923d0d0cfe3be84604ac04b76482a55f9dd655e1ef4d367f95bc2\",\"license\":\"MIT\"},\"@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\n// OpenZeppelin Contracts (last updated v5.3.0) (token/ERC20/utils/SafeERC20.sol)\\n\\npragma solidity ^0.8.20;\\n\\nimport {IERC20} from \\\"../IERC20.sol\\\";\\nimport {IERC1363} from \\\"../../../interfaces/IERC1363.sol\\\";\\n\\n/**\\n * @title SafeERC20\\n * @dev Wrappers around ERC-20 operations that throw on failure (when the token\\n * contract returns false). Tokens that return no value (and instead revert or\\n * throw on failure) are also supported, non-reverting calls are assumed to be\\n * successful.\\n * To use this library you can add a `using SafeERC20 for IERC20;` statement to your contract,\\n * which allows you to call the safe operations as `token.safeTransfer(...)`, etc.\\n */\\nlibrary SafeERC20 {\\n    /**\\n     * @dev An operation with an ERC-20 token failed.\\n     */\\n    error SafeERC20FailedOperation(address token);\\n\\n    /**\\n     * @dev Indicates a failed `decreaseAllowance` request.\\n     */\\n    error SafeERC20FailedDecreaseAllowance(address spender, uint256 currentAllowance, uint256 requestedDecrease);\\n\\n    /**\\n     * @dev Transfer `value` amount of `token` from the calling contract to `to`. If `token` returns no value,\\n     * non-reverting calls are assumed to be successful.\\n     */\\n    function safeTransfer(IERC20 token, address to, uint256 value) internal {\\n        _callOptionalReturn(token, abi.encodeCall(token.transfer, (to, value)));\\n    }\\n\\n    /**\\n     * @dev Transfer `value` amount of `token` from `from` to `to`, spending the approval given by `from` to the\\n     * calling contract. If `token` returns no value, non-reverting calls are assumed to be successful.\\n     */\\n    function safeTransferFrom(IERC20 token, address from, address to, uint256 value) internal {\\n        _callOptionalReturn(token, abi.encodeCall(token.transferFrom, (from, to, value)));\\n    }\\n\\n    /**\\n     * @dev Variant of {safeTransfer} that returns a bool instead of reverting if the operation is not successful.\\n     */\\n    function trySafeTransfer(IERC20 token, address to, uint256 value) internal returns (bool) {\\n        return _callOptionalReturnBool(token, abi.encodeCall(token.transfer, (to, value)));\\n    }\\n\\n    /**\\n     * @dev Variant of {safeTransferFrom} that returns a bool instead of reverting if the operation is not successful.\\n     */\\n    function trySafeTransferFrom(IERC20 token, address from, address to, uint256 value) internal returns (bool) {\\n        return _callOptionalReturnBool(token, abi.encodeCall(token.transferFrom, (from, to, value)));\\n    }\\n\\n    /**\\n     * @dev Increase the calling contract's allowance toward `spender` by `value`. If `token` returns no value,\\n     * non-reverting calls are assumed to be successful.\\n     *\\n     * IMPORTANT: If the token implements ERC-7674 (ERC-20 with temporary allowance), and if the \\\"client\\\"\\n     * smart contract uses ERC-7674 to set temporary allowances, then the \\\"client\\\" smart contract should avoid using\\n     * this function. Performing a {safeIncreaseAllowance} or {safeDecreaseAllowance} operation on a token contract\\n     * that has a non-zero temporary allowance (for that particular owner-spender) will result in unexpected behavior.\\n     */\\n    function safeIncreaseAllowance(IERC20 token, address spender, uint256 value) internal {\\n        uint256 oldAllowance = token.allowance(address(this), spender);\\n        forceApprove(token, spender, oldAllowance + value);\\n    }\\n\\n    /**\\n     * @dev Decrease the calling contract's allowance toward `spender` by `requestedDecrease`. If `token` returns no\\n     * value, non-reverting calls are assumed to be successful.\\n     *\\n     * IMPORTANT: If the token implements ERC-7674 (ERC-20 with temporary allowance), and if the \\\"client\\\"\\n     * smart contract uses ERC-7674 to set temporary allowances, then the \\\"client\\\" smart contract should avoid using\\n     * this function. Performing a {safeIncreaseAllowance} or {safeDecreaseAllowance} operation on a token contract\\n     * that has a non-zero temporary allowance (for that particular owner-spender) will result in unexpected behavior.\\n     */\\n    function safeDecreaseAllowance(IERC20 token, address spender, uint256 requestedDecrease) internal {\\n        unchecked {\\n            uint256 currentAllowance = token.allowance(address(this), spender);\\n            if (currentAllowance < requestedDecrease) {\\n                revert SafeERC20FailedDecreaseAllowance(spender, currentAllowance, requestedDecrease);\\n            }\\n            forceApprove(token, spender, currentAllowance - requestedDecrease);\\n        }\\n    }\\n\\n    /**\\n     * @dev Set the calling contract's allowance toward `spender` to `value`. If `token` returns no value,\\n     * non-reverting calls are assumed to be successful. Meant to be used with tokens that require the approval\\n     * to be set to zero before setting it to a non-zero value, such as USDT.\\n     *\\n     * NOTE: If the token implements ERC-7674, this function will not modify any temporary allowance. This function\\n     * only sets the \\\"standard\\\" allowance. Any temporary allowance will remain active, in addition to the value being\\n     * set here.\\n     */\\n    function forceApprove(IERC20 token, address spender, uint256 value) internal {\\n        bytes memory approvalCall = abi.encodeCall(token.approve, (spender, value));\\n\\n        if (!_callOptionalReturnBool(token, approvalCall)) {\\n            _callOptionalReturn(token, abi.encodeCall(token.approve, (spender, 0)));\\n            _callOptionalReturn(token, approvalCall);\\n        }\\n    }\\n\\n    /**\\n     * @dev Performs an {ERC1363} transferAndCall, with a fallback to the simple {ERC20} transfer if the target has no\\n     * code. This can be used to implement an {ERC721}-like safe transfer that rely on {ERC1363} checks when\\n     * targeting contracts.\\n     *\\n     * Reverts if the returned value is other than `true`.\\n     */\\n    function transferAndCallRelaxed(IERC1363 token, address to, uint256 value, bytes memory data) internal {\\n        if (to.code.length == 0) {\\n            safeTransfer(token, to, value);\\n        } else if (!token.transferAndCall(to, value, data)) {\\n            revert SafeERC20FailedOperation(address(token));\\n        }\\n    }\\n\\n    /**\\n     * @dev Performs an {ERC1363} transferFromAndCall, with a fallback to the simple {ERC20} transferFrom if the target\\n     * has no code. This can be used to implement an {ERC721}-like safe transfer that rely on {ERC1363} checks when\\n     * targeting contracts.\\n     *\\n     * Reverts if the returned value is other than `true`.\\n     */\\n    function transferFromAndCallRelaxed(\\n        IERC1363 token,\\n        address from,\\n        address to,\\n        uint256 value,\\n        bytes memory data\\n    ) internal {\\n        if (to.code.length == 0) {\\n            safeTransferFrom(token, from, to, value);\\n        } else if (!token.transferFromAndCall(from, to, value, data)) {\\n            revert SafeERC20FailedOperation(address(token));\\n        }\\n    }\\n\\n    /**\\n     * @dev Performs an {ERC1363} approveAndCall, with a fallback to the simple {ERC20} approve if the target has no\\n     * code. This can be used to implement an {ERC721}-like safe transfer that rely on {ERC1363} checks when\\n     * targeting contracts.\\n     *\\n     * NOTE: When the recipient address (`to`) has no code (i.e. is an EOA), this function behaves as {forceApprove}.\\n     * Opposedly, when the recipient address (`to`) has code, this function only attempts to call {ERC1363-approveAndCall}\\n     * once without retrying, and relies on the returned value to be true.\\n     *\\n     * Reverts if the returned value is other than `true`.\\n     */\\n    function approveAndCallRelaxed(IERC1363 token, address to, uint256 value, bytes memory data) internal {\\n        if (to.code.length == 0) {\\n            forceApprove(token, to, value);\\n        } else if (!token.approveAndCall(to, value, data)) {\\n            revert SafeERC20FailedOperation(address(token));\\n        }\\n    }\\n\\n    /**\\n     * @dev Imitates a Solidity high-level call (i.e. a regular function call to a contract), relaxing the requirement\\n     * on the return value: the return value is optional (but if data is returned, it must not be false).\\n     * @param token The token targeted by the call.\\n     * @param data The call data (encoded using abi.encode or one of its variants).\\n     *\\n     * This is a variant of {_callOptionalReturnBool} that reverts if call fails to meet the requirements.\\n     */\\n    function _callOptionalReturn(IERC20 token, bytes memory data) private {\\n        uint256 returnSize;\\n        uint256 returnValue;\\n        assembly (\\\"memory-safe\\\") {\\n            let success := call(gas(), token, 0, add(data, 0x20), mload(data), 0, 0x20)\\n            // bubble errors\\n            if iszero(success) {\\n                let ptr := mload(0x40)\\n                returndatacopy(ptr, 0, returndatasize())\\n                revert(ptr, returndatasize())\\n            }\\n            returnSize := returndatasize()\\n            returnValue := mload(0)\\n        }\\n\\n        if (returnSize == 0 ? address(token).code.length == 0 : returnValue != 1) {\\n            revert SafeERC20FailedOperation(address(token));\\n        }\\n    }\\n\\n    /**\\n     * @dev Imitates a Solidity high-level call (i.e. a regular function call to a contract), relaxing the requirement\\n     * on the return value: the return value is optional (but if data is returned, it must not be false).\\n     * @param token The token targeted by the call.\\n     * @param data The call data (encoded using abi.encode or one of its variants).\\n     *\\n     * This is a variant of {_callOptionalReturn} that silently catches all reverts and returns a bool instead.\\n     */\\n    function _callOptionalReturnBool(IERC20 token, bytes memory data) private returns (bool) {\\n        bool success;\\n        uint256 returnSize;\\n        uint256 returnValue;\\n        assembly (\\\"memory-safe\\\") {\\n            success := call(gas(), token, 0, add(data, 0x20), mload(data), 0, 0x20)\\n            returnSize := returndatasize()\\n            returnValue := mload(0)\\n        }\\n        return success && (returnSize == 0 ? address(token).code.length > 0 : returnValue == 1);\\n    }\\n}\\n\",\"keccak256\":\"0x982c5cb790ab941d1e04f807120a71709d4c313ba0bfc16006447ffbd27fbbd5\",\"license\":\"MIT\"},\"@openzeppelin/contracts/utils/Context.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\n// OpenZeppelin Contracts (last updated v5.0.1) (utils/Context.sol)\\n\\npragma solidity ^0.8.20;\\n\\n/**\\n * @dev Provides information about the current execution context, including the\\n * sender of the transaction and its data. While these are generally available\\n * via msg.sender and msg.data, they should not be accessed in such a direct\\n * manner, since when dealing with meta-transactions the account sending and\\n * paying for execution may not be the actual sender (as far as an application\\n * is concerned).\\n *\\n * This contract is only required for intermediate, library-like contracts.\\n */\\nabstract contract Context {\\n    function _msgSender() internal view virtual returns (address) {\\n        return msg.sender;\\n    }\\n\\n    function _msgData() internal view virtual returns (bytes calldata) {\\n        return msg.data;\\n    }\\n\\n    function _contextSuffixLength() internal view virtual returns (uint256) {\\n        return 0;\\n    }\\n}\\n\",\"keccak256\":\"0x493033a8d1b176a037b2cc6a04dad01a5c157722049bbecf632ca876224dd4b2\",\"license\":\"MIT\"},\"@openzeppelin/contracts/utils/ReentrancyGuard.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\n// OpenZeppelin Contracts (last updated v5.1.0) (utils/ReentrancyGuard.sol)\\n\\npragma solidity ^0.8.20;\\n\\n/**\\n * @dev Contract module that helps prevent reentrant calls to a function.\\n *\\n * Inheriting from `ReentrancyGuard` will make the {nonReentrant} modifier\\n * available, which can be applied to functions to make sure there are no nested\\n * (reentrant) calls to them.\\n *\\n * Note that because there is a single `nonReentrant` guard, functions marked as\\n * `nonReentrant` may not call one another. This can be worked around by making\\n * those functions `private`, and then adding `external` `nonReentrant` entry\\n * points to them.\\n *\\n * TIP: If EIP-1153 (transient storage) is available on the chain you're deploying at,\\n * consider using {ReentrancyGuardTransient} instead.\\n *\\n * TIP: If you would like to learn more about reentrancy and alternative ways\\n * to protect against it, check out our blog post\\n * https://blog.openzeppelin.com/reentrancy-after-istanbul/[Reentrancy After Istanbul].\\n */\\nabstract contract ReentrancyGuard {\\n    // Booleans are more expensive than uint256 or any type that takes up a full\\n    // word because each write operation emits an extra SLOAD to first read the\\n    // slot's contents, replace the bits taken up by the boolean, and then write\\n    // back. This is the compiler's defense against contract upgrades and\\n    // pointer aliasing, and it cannot be disabled.\\n\\n    // The values being non-zero value makes deployment a bit more expensive,\\n    // but in exchange the refund on every call to nonReentrant will be lower in\\n    // amount. Since refunds are capped to a percentage of the total\\n    // transaction's gas, it is best to keep them low in cases like this one, to\\n    // increase the likelihood of the full refund coming into effect.\\n    uint256 private constant NOT_ENTERED = 1;\\n    uint256 private constant ENTERED = 2;\\n\\n    uint256 private _status;\\n\\n    /**\\n     * @dev Unauthorized reentrant call.\\n     */\\n    error ReentrancyGuardReentrantCall();\\n\\n    constructor() {\\n        _status = NOT_ENTERED;\\n    }\\n\\n    /**\\n     * @dev Prevents a contract from calling itself, directly or indirectly.\\n     * Calling a `nonReentrant` function from another `nonReentrant`\\n     * function is not supported. It is possible to prevent this from happening\\n     * by making the `nonReentrant` function external, and making it call a\\n     * `private` function that does the actual work.\\n     */\\n    modifier nonReentrant() {\\n        _nonReentrantBefore();\\n        _;\\n        _nonReentrantAfter();\\n    }\\n\\n    function _nonReentrantBefore() private {\\n        // On the first call to nonReentrant, _status will be NOT_ENTERED\\n        if (_status == ENTERED) {\\n            revert ReentrancyGuardReentrantCall();\\n        }\\n\\n        // Any calls to nonReentrant after this point will fail\\n        _status = ENTERED;\\n    }\\n\\n    function _nonReentrantAfter() private {\\n        // By storing the original value once again, a refund is triggered (see\\n        // https://eips.ethereum.org/EIPS/eip-2200)\\n        _status = NOT_ENTERED;\\n    }\\n\\n    /**\\n     * @dev Returns true if the reentrancy guard is currently set to \\\"entered\\\", which indicates there is a\\n     * `nonReentrant` function in the call stack.\\n     */\\n    function _reentrancyGuardEntered() internal view returns (bool) {\\n        return _status == ENTERED;\\n    }\\n}\\n\",\"keccak256\":\"0x11a5a79827df29e915a12740caf62fe21ebe27c08c9ae3e09abe9ee3ba3866d3\",\"license\":\"MIT\"},\"@openzeppelin/contracts/utils/introspection/IERC165.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\n// OpenZeppelin Contracts (last updated v5.4.0) (utils/introspection/IERC165.sol)\\n\\npragma solidity >=0.4.16;\\n\\n/**\\n * @dev Interface of the ERC-165 standard, as defined in the\\n * https://eips.ethereum.org/EIPS/eip-165[ERC].\\n *\\n * Implementers can declare support of contract interfaces, which can then be\\n * queried by others ({ERC165Checker}).\\n *\\n * For an implementation, see {ERC165}.\\n */\\ninterface IERC165 {\\n    /**\\n     * @dev Returns true if this contract implements the interface defined by\\n     * `interfaceId`. See the corresponding\\n     * https://eips.ethereum.org/EIPS/eip-165#how-interfaces-are-identified[ERC section]\\n     * to learn more about how these ids are created.\\n     *\\n     * This function call must use less than 30 000 gas.\\n     */\\n    function supportsInterface(bytes4 interfaceId) external view returns (bool);\\n}\\n\",\"keccak256\":\"0x8891738ffe910f0cf2da09566928589bf5d63f4524dd734fd9cedbac3274dd5c\",\"license\":\"MIT\"},\"blockchain/contracts/EryzaComputeMarketplace.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\npragma solidity ^0.8.19;\\n\\nimport \\\"@openzeppelin/contracts/utils/ReentrancyGuard.sol\\\";\\nimport \\\"@openzeppelin/contracts/access/Ownable.sol\\\";\\nimport \\\"@openzeppelin/contracts/token/ERC20/IERC20.sol\\\";\\nimport \\\"@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol\\\";\\n\\n/**\\n * @title EryzaComputeMarketplace\\n * @dev Smart contract for managing compute resource marketplace on Avalanche\\n */\\ncontract EryzaComputeMarketplace is ReentrancyGuard, Ownable {\\n    using SafeERC20 for IERC20;\\n\\n    // Events\\n    event ComputeNodeRegistered(address indexed provider, uint256 indexed nodeId, uint256 pricePerHour);\\n    event ComputeJobCreated(uint256 indexed jobId, address indexed client, uint256 indexed nodeId, uint256 duration);\\n    event ComputeJobStarted(uint256 indexed jobId, uint256 startTime);\\n    event ComputeJobCompleted(uint256 indexed jobId, uint256 endTime);\\n    event PaymentReleased(uint256 indexed jobId, address indexed provider, uint256 amount);\\n    event DisputeRaised(uint256 indexed jobId, address indexed raiser, string reason);\\n    event DisputeResolved(uint256 indexed jobId, bool favorProvider);\\n\\n    // Structs\\n    struct ComputeNode {\\n        address provider;\\n        string nodeType; // \\\"ssh\\\", \\\"training\\\", \\\"edge\\\"\\n        uint256 cpuCores;\\n        uint256 memoryGB;\\n        uint256 gpuCount;\\n        string gpuType;\\n        uint256 pricePerHour; // in wei\\n        bool available;\\n        uint256 totalJobs;\\n        uint256 successfulJobs;\\n        string endpoint; // ZeroTier IP or connection string\\n    }\\n\\n    struct ComputeJob {\\n        uint256 nodeId;\\n        address client;\\n        address provider;\\n        uint256 duration; // in hours\\n        uint256 totalCost;\\n        uint256 startTime;\\n        uint256 endTime;\\n        JobStatus status;\\n        string jobType; // \\\"ssh\\\", \\\"training\\\", \\\"inference\\\", \\\"edge\\\"\\n        string jobConfig; // IPFS hash or config string\\n        bool disputed;\\n        address disputer;\\n        string disputeReason;\\n    }\\n\\n    enum JobStatus {\\n        Created,\\n        Funded,\\n        Started,\\n        Completed,\\n        Cancelled,\\n        Disputed\\n    }\\n\\n    // State variables\\n    IERC20 public paymentToken; // AVAX or wrapped AVAX\\n    uint256 public constant PLATFORM_FEE_PERCENT = 250; // 2.5%\\n    uint256 public constant BASIS_POINTS = 10000;\\n    uint256 public disputeTimeWindow = 24 hours;\\n    \\n    uint256 private nextNodeId = 1;\\n    uint256 private nextJobId = 1;\\n    \\n    mapping(uint256 => ComputeNode) public computeNodes;\\n    mapping(uint256 => ComputeJob) public computeJobs;\\n    mapping(address => uint256[]) public providerNodes;\\n    mapping(address => uint256[]) public clientJobs;\\n    mapping(uint256 => uint256) public nodeActiveJobs;\\n    \\n    // Escrow balances\\n    mapping(uint256 => uint256) public jobEscrow;\\n    \\n    constructor(address _paymentToken) Ownable(msg.sender) {\\n        paymentToken = IERC20(_paymentToken);\\n    }\\n\\n    /**\\n     * @dev Register a new compute node\\n     */\\n    function registerComputeNode(\\n        string memory nodeType,\\n        uint256 cpuCores,\\n        uint256 memoryGB,\\n        uint256 gpuCount,\\n        string memory gpuType,\\n        uint256 pricePerHour,\\n        string memory endpoint\\n    ) external returns (uint256) {\\n        require(pricePerHour > 0, \\\"Price must be greater than 0\\\");\\n        require(cpuCores > 0, \\\"CPU cores must be greater than 0\\\");\\n        require(memoryGB > 0, \\\"Memory must be greater than 0\\\");\\n\\n        uint256 nodeId = nextNodeId++;\\n        \\n        computeNodes[nodeId] = ComputeNode({\\n            provider: msg.sender,\\n            nodeType: nodeType,\\n            cpuCores: cpuCores,\\n            memoryGB: memoryGB,\\n            gpuCount: gpuCount,\\n            gpuType: gpuType,\\n            pricePerHour: pricePerHour,\\n            available: true,\\n            totalJobs: 0,\\n            successfulJobs: 0,\\n            endpoint: endpoint\\n        });\\n        \\n        providerNodes[msg.sender].push(nodeId);\\n        \\n        emit ComputeNodeRegistered(msg.sender, nodeId, pricePerHour);\\n        \\n        return nodeId;\\n    }\\n\\n    /**\\n     * @dev Update compute node availability\\n     */\\n    function updateNodeAvailability(uint256 nodeId, bool available) external {\\n        require(computeNodes[nodeId].provider == msg.sender, \\\"Not node owner\\\");\\n        computeNodes[nodeId].available = available;\\n    }\\n\\n    /**\\n     * @dev Update compute node pricing\\n     */\\n    function updateNodePrice(uint256 nodeId, uint256 newPrice) external {\\n        require(computeNodes[nodeId].provider == msg.sender, \\\"Not node owner\\\");\\n        require(newPrice > 0, \\\"Price must be greater than 0\\\");\\n        computeNodes[nodeId].pricePerHour = newPrice;\\n    }\\n\\n    /**\\n     * @dev Create a new compute job\\n     */\\n    function createComputeJob(\\n        uint256 nodeId,\\n        uint256 duration,\\n        string memory jobType,\\n        string memory jobConfig\\n    ) external returns (uint256) {\\n        require(computeNodes[nodeId].available, \\\"Node not available\\\");\\n        require(duration > 0, \\\"Duration must be greater than 0\\\");\\n        \\n        ComputeNode storage node = computeNodes[nodeId];\\n        uint256 totalCost = node.pricePerHour * duration;\\n        uint256 platformFee = (totalCost * PLATFORM_FEE_PERCENT) / BASIS_POINTS;\\n        uint256 totalAmount = totalCost + platformFee;\\n        \\n        uint256 jobId = nextJobId++;\\n        \\n        computeJobs[jobId] = ComputeJob({\\n            nodeId: nodeId,\\n            client: msg.sender,\\n            provider: node.provider,\\n            duration: duration,\\n            totalCost: totalCost,\\n            startTime: 0,\\n            endTime: 0,\\n            status: JobStatus.Created,\\n            jobType: jobType,\\n            jobConfig: jobConfig,\\n            disputed: false,\\n            disputer: address(0),\\n            disputeReason: \\\"\\\"\\n        });\\n        \\n        clientJobs[msg.sender].push(jobId);\\n        \\n        // Transfer payment to escrow\\n        paymentToken.safeTransferFrom(msg.sender, address(this), totalAmount);\\n        jobEscrow[jobId] = totalAmount;\\n        \\n        computeJobs[jobId].status = JobStatus.Funded;\\n        \\n        emit ComputeJobCreated(jobId, msg.sender, nodeId, duration);\\n        \\n        return jobId;\\n    }\\n\\n    /**\\n     * @dev Start a compute job (called by provider)\\n     */\\n    function startComputeJob(uint256 jobId) external {\\n        ComputeJob storage job = computeJobs[jobId];\\n        require(job.provider == msg.sender, \\\"Not job provider\\\");\\n        require(job.status == JobStatus.Funded, \\\"Job not funded\\\");\\n        \\n        job.startTime = block.timestamp;\\n        job.status = JobStatus.Started;\\n        \\n        // Mark node as busy\\n        nodeActiveJobs[job.nodeId]++;\\n        \\n        emit ComputeJobStarted(jobId, block.timestamp);\\n    }\\n\\n    /**\\n     * @dev Complete a compute job (called by client or automatically)\\n     */\\n    function completeComputeJob(uint256 jobId) external {\\n        ComputeJob storage job = computeJobs[jobId];\\n        require(\\n            job.client == msg.sender || job.provider == msg.sender,\\n            \\\"Not authorized\\\"\\n        );\\n        require(job.status == JobStatus.Started, \\\"Job not started\\\");\\n        \\n        job.endTime = block.timestamp;\\n        job.status = JobStatus.Completed;\\n        \\n        // Release node\\n        nodeActiveJobs[job.nodeId]--;\\n        \\n        // Update node statistics\\n        ComputeNode storage node = computeNodes[job.nodeId];\\n        node.totalJobs++;\\n        node.successfulJobs++;\\n        \\n        emit ComputeJobCompleted(jobId, block.timestamp);\\n        \\n        // Release payment after dispute window\\n        _schedulePaymentRelease(jobId);\\n    }\\n\\n    /**\\n     * @dev Release payment to provider\\n     */\\n    function releasePayment(uint256 jobId) external nonReentrant {\\n        ComputeJob storage job = computeJobs[jobId];\\n        require(job.status == JobStatus.Completed, \\\"Job not completed\\\");\\n        require(!job.disputed, \\\"Job disputed\\\");\\n        require(\\n            block.timestamp >= job.endTime + disputeTimeWindow || \\n            msg.sender == job.client,\\n            \\\"Dispute window not passed\\\"\\n        );\\n        \\n        uint256 escrowAmount = jobEscrow[jobId];\\n        require(escrowAmount > 0, \\\"Payment already released\\\");\\n        \\n        jobEscrow[jobId] = 0;\\n        \\n        uint256 platformFee = (job.totalCost * PLATFORM_FEE_PERCENT) / BASIS_POINTS;\\n        uint256 providerAmount = job.totalCost;\\n        \\n        // Transfer to provider and platform\\n        paymentToken.safeTransfer(job.provider, providerAmount);\\n        paymentToken.safeTransfer(owner(), platformFee);\\n        \\n        emit PaymentReleased(jobId, job.provider, providerAmount);\\n    }\\n\\n    /**\\n     * @dev Raise a dispute\\n     */\\n    function raiseDispute(uint256 jobId, string memory reason) external {\\n        ComputeJob storage job = computeJobs[jobId];\\n        require(\\n            job.client == msg.sender || job.provider == msg.sender,\\n            \\\"Not authorized\\\"\\n        );\\n        require(job.status == JobStatus.Completed, \\\"Job not completed\\\");\\n        require(!job.disputed, \\\"Already disputed\\\");\\n        require(\\n            block.timestamp <= job.endTime + disputeTimeWindow,\\n            \\\"Dispute window passed\\\"\\n        );\\n        \\n        job.disputed = true;\\n        job.disputer = msg.sender;\\n        job.disputeReason = reason;\\n        \\n        emit DisputeRaised(jobId, msg.sender, reason);\\n    }\\n\\n    /**\\n     * @dev Resolve dispute (called by platform admin)\\n     */\\n    function resolveDispute(uint256 jobId, bool favorProvider) external onlyOwner {\\n        ComputeJob storage job = computeJobs[jobId];\\n        require(job.disputed, \\\"No dispute\\\");\\n        \\n        uint256 escrowAmount = jobEscrow[jobId];\\n        require(escrowAmount > 0, \\\"Payment already released\\\");\\n        \\n        jobEscrow[jobId] = 0;\\n        \\n        if (favorProvider) {\\n            // Pay provider\\n            uint256 platformFee = (job.totalCost * PLATFORM_FEE_PERCENT) / BASIS_POINTS;\\n            paymentToken.safeTransfer(job.provider, job.totalCost);\\n            paymentToken.safeTransfer(owner(), platformFee);\\n            \\n            // Update node statistics\\n            ComputeNode storage node = computeNodes[job.nodeId];\\n            node.successfulJobs++;\\n        } else {\\n            // Refund client\\n            paymentToken.safeTransfer(job.client, escrowAmount);\\n        }\\n        \\n        emit DisputeResolved(jobId, favorProvider);\\n    }\\n\\n    /**\\n     * @dev Cancel job before it starts\\n     */\\n    function cancelJob(uint256 jobId) external {\\n        ComputeJob storage job = computeJobs[jobId];\\n        require(job.client == msg.sender, \\\"Not job client\\\");\\n        require(job.status == JobStatus.Funded, \\\"Cannot cancel\\\");\\n        \\n        job.status = JobStatus.Cancelled;\\n        \\n        // Refund client\\n        uint256 escrowAmount = jobEscrow[jobId];\\n        jobEscrow[jobId] = 0;\\n        paymentToken.safeTransfer(job.client, escrowAmount);\\n    }\\n\\n    /**\\n     * @dev Get available nodes by type\\n     */\\n    function getAvailableNodes(string memory nodeType) \\n        external \\n        view \\n        returns (uint256[] memory) \\n    {\\n        uint256 count = 0;\\n        \\n        // Count available nodes of specified type\\n        for (uint256 i = 1; i < nextNodeId; i++) {\\n            if (computeNodes[i].available && \\n                keccak256(bytes(computeNodes[i].nodeType)) == keccak256(bytes(nodeType))) {\\n                count++;\\n            }\\n        }\\n        \\n        uint256[] memory availableNodes = new uint256[](count);\\n        uint256 index = 0;\\n        \\n        for (uint256 i = 1; i < nextNodeId; i++) {\\n            if (computeNodes[i].available && \\n                keccak256(bytes(computeNodes[i].nodeType)) == keccak256(bytes(nodeType))) {\\n                availableNodes[index] = i;\\n                index++;\\n            }\\n        }\\n        \\n        return availableNodes;\\n    }\\n\\n    /**\\n     * @dev Get node information\\n     */\\n    function getNodeInfo(uint256 nodeId) \\n        external \\n        view \\n        returns (ComputeNode memory) \\n    {\\n        return computeNodes[nodeId];\\n    }\\n\\n    /**\\n     * @dev Get job information\\n     */\\n    function getJobInfo(uint256 jobId) \\n        external \\n        view \\n        returns (ComputeJob memory) \\n    {\\n        return computeJobs[jobId];\\n    }\\n\\n    /**\\n     * @dev Get provider's nodes\\n     */\\n    function getProviderNodes(address provider) \\n        external \\n        view \\n        returns (uint256[] memory) \\n    {\\n        return providerNodes[provider];\\n    }\\n\\n    /**\\n     * @dev Get client's jobs\\n     */\\n    function getClientJobs(address client) \\n        external \\n        view \\n        returns (uint256[] memory) \\n    {\\n        return clientJobs[client];\\n    }\\n\\n    /**\\n     * @dev Internal function to schedule payment release\\n     */\\n    function _schedulePaymentRelease(uint256 jobId) internal {\\n        // In a more sophisticated implementation, this could trigger\\n        // an external oracle or time-based release mechanism\\n    }\\n\\n    /**\\n     * @dev Emergency withdrawal (only owner)\\n     */\\n    function emergencyWithdraw(address token, uint256 amount) external onlyOwner {\\n        IERC20(token).safeTransfer(owner(), amount);\\n    }\\n\\n    /**\\n     * @dev Update platform fee (only owner)\\n     */\\n    function updatePlatformFee(uint256 newFeePercent) external onlyOwner {\\n        require(newFeePercent <= 1000, \\\"Fee too high\\\"); // Max 10%\\n        // Would need to update PLATFORM_FEE_PERCENT constant in upgraded version\\n    }\\n\\n    /**\\n     * @dev Update dispute time window (only owner)\\n     */\\n    function updateDisputeTimeWindow(uint256 newWindow) external onlyOwner {\\n        disputeTimeWindow = newWindow;\\n    }\\n}\\n\",\"keccak256\":\"0x8a634b64de11a2810108054363806675857dfb90e7d5dbbc074222cbb8ffa2cb\",\"license\":\"MIT\"}},\"version\":1}",
+  "bytecode": "0x6080346100e057601f62002abf38819003918201601f19168301916001600160401b038311848410176100e5578084926020946040528339810103126100e057516001600160a01b0390818116908190036100e057600160005533156100c75760018054336001600160a01b03198083168217909355604051949091167f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0600080a3620151806003556001600455600160055560025416176002556129c39081620000fc8239f35b604051631e4fbdf760e01b815260006004820152602490fd5b600080fd5b634e487b7160e01b600052604160045260246000fdfe608080604052600436101561001357600080fd5b60003560e01c9081630c4f321f1461246d575080631dffa3dc1461237e5780633013ce291461235557806334b25ee2146121e35780633d44645c14611ad9578063486fbd7914611a8f5780634afedcd614611a3b5780634b9d4bab146119e157806352a662a31461143257806353e215f414611253578063560d52d4146112375780635aef573c14610f61578063715018a614610f0457806372143f4114610df35780637e4dcc0614610dd55780637f4497d814610b8557806388685cd9146109c05780638da5cb5b146109975780638df32711146107fc5780638facd859146107a457806395ccea6714610765578063a3590e4b14610739578063aa0b5988146106df578063be452e0414610667578063cf2646c2146105e3578063e13242dd146105c2578063e1f1c4a7146105a5578063eb1140aa14610464578063eb96e6591461032e578063f2fde38b146102a55763f72d3a7e1461017457600080fd5b346102a0576020806003193601126102a0576004356000818152600783526040902060028101549092906001600160a01b0316330361026957600783019283549360ff851660068110156102535760010361021d5760027fe3afe40bf62af5d61e451ce5ac1a16baa282148052ee6bd241deb3cd0242d21a949542600585015560ff191617905554600052600a815260406000206102128154612761565b9055604051428152a2005b60405162461bcd60e51b815260048101849052600e60248201526d129bd8881b9bdd08199d5b99195960921b6044820152606490fd5b634e487b7160e01b600052602160045260246000fd5b6064906040519062461bcd60e51b82526004820152601060248201526f2737ba103537b110383937bb34b232b960811b6044820152fd5b600080fd5b346102a05760203660031901126102a0576102be612563565b6102c66126e9565b6001600160a01b0390811690811561031557600154826001600160601b0360a01b821617600155167f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0600080a3005b604051631e4fbdf760e01b815260006004820152602490fd5b346102a0576020806003193601126102a05760043590816000526007815260406000209061037360018060a01b03806001850154163314908115610454575b5061285c565b60078201805460ff811660068110156102535760020361041d5760039042600686015560ff19161790558154600052600a81526040600020918254928315610407577f41930f16e103c5d76d3ab5a14c0201a0adab06354e8e99241f5b2ad02566525e93600019019055546000526006815260096040600020600881016103fa8154612761565b9055016102128154612761565b634e487b7160e01b600052601160045260246000fd5b60405162461bcd60e51b815260048101849052600f60248201526e129bd8881b9bdd081cdd185c9d1959608a1b6044820152606490fd5b600285015416331490508561036d565b346102a05760203660031901126102a057600435600052600760205260406000208054600160a01b6001900391826001820154169280600283015416906003830154600484015460058501546006860154600787015460ff169160405193848060088b01906104d29161260b565b036104dd90866124ec565b60405195866104ef8160098d0161260b565b036104fa90886124ec565b600a8a01549860405180600b819d01906105139161260b565b0361051e908c6124ec565b6040519c8d9c8d5260208d015260408c015260608b015260808a015260a089015260c088015260e08701610551916126a1565b6101a080610100880152860161056691612591565b85810361012087015261057891612591565b9160ff8116151561014086015260081c166101608401528281036101808401526105a191612591565b0390f35b346102a05760003660031901126102a05760206040516127108152f35b346102a05760203660031901126102a0576105db6126e9565b600435600355005b346102a0576020806003193601126102a0576001600160a01b03610605612563565b1660005260098152604060002090604051908181845491828152019360005281600020916000905b828210610650576105a185610644818903826124ec565b604051918291826126ae565b83548652948501946001938401939091019061062d565b346102a0576020806003193601126102a0576001600160a01b03610689612563565b1660005260088152604060002090604051908181845491828152019360005281600020916000905b8282106106c8576105a185610644818903826124ec565b8354865294850194600193840193909101906106b1565b346102a05760203660031901126102a0576106f86126e9565b6103e86004351161070557005b60405162461bcd60e51b815260206004820152600c60248201526b08ccaca40e8dede40d0d2ced60a31b6044820152606490fd5b346102a05760203660031901126102a057600435600052600a6020526020604060002054604051908152f35b346102a05760403660031901126102a0576107a2610781612563565b6107896126e9565b600154602435916001600160a01b039182169116612925565b005b346102a05760403660031901126102a0576107bd612563565b6001600160a01b03166000908152600960205260409020805460243591908210156102a0576020916107ee91612579565b90546040519160031b1c8152f35b346102a0576020806003193601126102a0576004356001600160401b0381116102a05761082d90369060040161250d565b600091600191600454925b838110610927575061084984612976565b9361085760405195866124ec565b808552610866601f1991612976565b01368386013760009060015b84811061088757604051806105a188826126ae565b8060005260068452604060002060ff60078201541690816108f5575b506108b7575b6108b290612761565b610872565b9185518110156108df576108d78184866108b29460051b8a010152612761565b9290506108a9565b634e487b7160e01b600052603260045260246000fd5b600191506109149061090d604051809481930161260b565b03826124ec565b84815191012082518584012014876108a3565b8060005260068352604060002060ff600782015416908161096c575b50610957575b61095290612761565b610838565b9361096461095291612761565b949050610949565b600191506109849061090d604051809481930161260b565b8381519101208251848401201486610943565b346102a05760003660031901126102a0576001546040516001600160a01b039091168152602090f35b346102a0576020806003193601126102a057600435600260005414610b735760026000558060005260078252604060002060ff6007820154166006811015610253576003610a0e9114612899565b60ff600a82015416610b3f57610a2b6006820154600354906127e7565b4210801590610b29575b15610ae45781600052600b8352610a5260406000205415156128d9565b81600052600b83526000604081205560048101549260fa840284810460fa1485151715610407577f21d71db5be59bb9fa133895586b7404307dd33fb93b16db09dc6f1d9d7d231b092610ad360018060a01b0392610abd886002868154169501948686541690612925565b6127108460025416910490846001541690612925565b541693604051908152a36001600055005b60405162461bcd60e51b815260048101849052601960248201527f446973707574652077696e646f77206e6f7420706173736564000000000000006044820152606490fd5b5060018101546001600160a01b03163314610a35565b60405162461bcd60e51b815260048101849052600c60248201526b129bd888191a5cdc1d5d195960a21b6044820152606490fd5b604051633ee5aeb560e01b8152600490fd5b346102a05760203660031901126102a0576060610180604051610ba7816124b4565b60008152600060208201526000604082015260008382015260006080820152600060a0820152600060c0820152600060e0820152826101008201528261012082015260006101408201526000610160820152015260043560005260076020526040600020604051610c17816124b4565b8154815260018201546001600160a01b03908116602083015260028301541660408201526003820154606082015260048201546080820152600582015460a082015260068083015460c0830152600783015460ff16929083101561025357610ced600b916105a19460e0850152604051610c988161090d816008860161260b565b610100850152604051610cb28161090d816009860161260b565b610120850152600a81015460ff8116151561014086015260081c6001600160a01b031661016085015260405192839161090d9183910161260b565b610180820152604051918291602083528051602084015260018060a01b03602082015116604084015260018060a01b03604082015116606084015260608101516080840152608081015160a084015260a081015160c084015260c081015160e0840152610d6360e08201516101008501906126a1565b610100810151610d826101a091826101208701526101c0860190612591565b90610180610da461012085015193601f199485898303016101408a0152612591565b93610140810151151561016088015260018060a01b0361016082015116828801520151918584030190850152612591565b346102a05760003660031901126102a0576020600354604051908152f35b346102a05760203660031901126102a0576004356000526006602052604060002060018060a01b038154166105a160405192610e3d84610e36816001850161260b565b03856124ec565b600a60028201549160038101546004820154610edd60405195610e6e87610e67816005890161260b565b03886124ec565b60068501549660ff60078701541693600887015495610ea3600989015498610e9c604051809c81930161260b565b038a6124ec565b610ec06040519d8e9d8e528d610160908160208201520190612591565b9360408d015260608c015260808b015289820360a08b0152612591565b9460c0880152151560e0870152610100860152610120850152838203610140850152612591565b346102a05760003660031901126102a057610f1d6126e9565b600180546001600160a01b031981169091556000906001600160a01b03167f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e08280a3005b346102a05760403660031901126102a0576001600160401b036004356024358281116102a057610f9590369060040161250d565b816000526020926007845260406000209060018060a01b0391610fc96001938085840154163314908115611227575061285c565b60ff6007820154166006811015610253576003610fe69114612899565b600a8101805460ff81166111ef576110056006840154600354906127e7565b42116111b257610100600160a81b031985166001600160a81b0319909116173360081b610100600160a81b0316179055600b0191835191821161119c5761104c83546125d1565b601f8111611153575b5085601f83116001146110c9579180806110b995937f1b84372106d77c6daea0dda35bbc0229d10a83f58ec89909288492519368234197956000936110be575b501b916000199060031b1c19161790555b6040519182918683523396830190612591565b0390a3005b86015192508a611095565b601f9291921982169084600052876000209160005b8982821061113f5750509183916110b996947f1b84372106d77c6daea0dda35bbc0229d10a83f58ec89909288492519368234198969410611126575b5050811b0190556110a6565b85015160001960f88460031b161c19169055888061111a565b8884015185559386019392830192016110de565b8360005286600020601f840160051c810191888510611192575b601f0160051c019082905b828110611186575050611055565b60008155018290611178565b909150819061116d565b634e487b7160e01b600052604160045260246000fd5b60405162461bcd60e51b8152600481018990526015602482015274111a5cdc1d5d19481dda5b991bddc81c185cdcd959605a1b6044820152606490fd5b60405162461bcd60e51b815260048101899052601060248201526f105b1c9958591e48191a5cdc1d5d195960821b6044820152606490fd5b600284015416331490508861036d565b346102a05760003660031901126102a057602060405160fa8152f35b346102a05760203660031901126102a0576060610140604051611275816124d0565b6000815282602082015260006040820152600083820152600060808201528260a0820152600060c0820152600060e082015260006101008201526000610120820152015260043560005260066020526105a16040600020600a61137a604051926112de846124d0565b80546001600160a01b031684526040516112ff8161090d816001860161260b565b60208501526002810154604085015260038101546060850152600481015460808501526040516113368161090d816005860161260b565b60a0850152600681015460c085015260ff600782015416151560e08501526008810154610100850152600981015461012085015261090d604051809481930161260b565b6101408201526040519182916020835260018060a01b03815116602084015260208101516113b661016091826040870152610180860190612591565b906040830151606086015260608301516080860152608083015160a08601526101406113f460a085015193601f1994858983030160c08a0152612591565b9360c081015160e088015260e08101511515610100880152610100810151610120880152610120810151828801520151918584030190850152612591565b346102a05760e03660031901126102a0576004356001600160401b0381116102a05761146290369060040161250d565b6084356001600160401b0381116102a05761148190369060040161250d565b9060c4356001600160401b0381116102a0576114a190369060040161250d565b6114ae60a4351515612715565b6024351561199d576044351561195857600454926114cb84612761565b600455604051926114db846124d0565b338452602084015260243560408401526044356060840152606435608084015260a083015260a43560c0830152600160e08301526000610100830152600061012083015261014082015281600052600660205260406000209160018060a01b038251166001600160601b0360a01b84541617835560208201519283516001600160401b03811161119c5761157260018301546125d1565b601f8111611911575b506020601f82116001146118a2578192939495600092611897575b50508160011b916000199060031b1c19161760018201555b60408301516002820155606083015160038201556080830151600482015560a08301518051906001600160401b03821161119c576115ef60058401546125d1565b601f8111611850575b50602090601f83116001146117da5791806101409492600a946000926117cf575b50508160011b916000199060031b1c19161760058201555b60c0850151600682015561165a60e08601511515600783019060ff801983541691151516179055565b6101008501516008820155610120850151600982015501920151908151926001600160401b03841161119c5761169081546125d1565b93601f8511611787575b602094508493601f8211600114611724579381929394600092611719575b50508160011b916000199060031b1c19161790555b33600052600882526116e3816040600020612770565b8060405160a43581527f9ae856703585c6656a94de0b9fa016ae1dab239ff224e877e311fa47d796e341843392a3604051908152f35b0151905085806116b8565b601f1982169483600052866000209160005b878110611770575083600195969710611757575b505050811b0190556116cd565b015160001960f88460031b161c1916905585808061174a565b919288600181928685015181550194019201611736565b816000526020600020601f820160051c810195602083106117c5575b601f0160051c01945b8581106117b9575061169a565b600081556001016117ac565b90955085906117a3565b015190508780611619565b906005840160005260206000209160005b601f19851681106118385750926101409492600192600a9583601f1981161061181f575b505050811b016005820155611631565b015160001960f88460031b161c1916905587808061180f565b919260206001819286850151815501940192016117eb565b600584016000526020600020601f840160051c810160208510611890575b601f830160051c820181106118845750506115f8565b6000815560010161186e565b508061186e565b015190508580611596565b6001830160005260206000209060005b601f19841681106118f9575060019394959683601f198116106118e0575b505050811b0160018201556115ae565b015160001960f88460031b161c191690558580806118d0565b9091602060018192858b0151815501930191016118b2565b600183016000526020600020601f830160051c810160208410611951575b601f830160051c8201811061194557505061157b565b6000815560010161192f565b508061192f565b60405162461bcd60e51b815260206004820152601d60248201527f4d656d6f7279206d7573742062652067726561746572207468616e20300000006044820152606490fd5b606460405162461bcd60e51b815260206004820152602060248201527f43505520636f726573206d7573742062652067726561746572207468616e20306044820152fd5b346102a05760403660031901126102a05760043560243590806000526006602052611a1a60018060a01b036040600020541633146127aa565b611a25821515612715565b6000526006602052600660406000200155600080f35b346102a0576107a2611a4c36612495565b90806000526006602052611a6e60018060a01b036040600020541633146127aa565b600052600660205260076040600020019060ff801983541691151516179055565b346102a05760403660031901126102a057611aa8612563565b6001600160a01b03166000908152600860205260409020805460243591908210156102a0576020916107ee91612579565b346102a05760803660031901126102a0576044356001600160401b0381116102a057611b0990369060040161250d565b6064356001600160401b0381116102a057611b2890369060040161250d565b600435600052600660205260ff60076040600020015416156121a9576024351561216457600435600052600660205260406000209060068201549060243582029180830460243514901517156104075760fa820282810460fa148315171561040757612710611b989104836127e7565b9360055493611ba685612761565b6005555460405193906001600160a01b0316611bc1856124b4565b6004358552336020860152604085015260243560608501526080840152600060a0840152600060c0840152600060e0840152610100830152610120820152600061014082015260006101608201526040518060208101106001600160401b0360208301111761119c576020810160405260008152610180820152816000526007602052604060002090805182556001820160018060a01b03602083015116906001600160601b0360a01b9182825416179055600283019060018060a01b0360408401511690825416179055606081015160038301556080810151600483015560a0810151600583015560c0810151600683015560e081015160068110156102535760ff801960078501541691161760078301556101008101518051906001600160401b03821161119c578190611cfa60088601546125d1565b601f8111612111575b50602090601f831160011461209f57600092612094575b50508160011b916000199060031b1c19161760088301555b6101208101518051906001600160401b03821161119c57611d5660098501546125d1565b601f811161204d575b50602090601f8311600114611fd95761018093929160009183611fce575b50508160011b916000199060031b1c19161760098401555b611de1600a8401611db96101408401511515829060ff801983541691151516179055565b6101608301518154610100600160a81b03191660089190911b610100600160a81b0316179055565b01518051906001600160401b03821161119c57611e01600b8401546125d1565b601f8111611f87575b50602090601f8311600114611f1957600b929160009183611f0e575b50508160011b916000199060031b1c1916179101555b336000526009602052611e53816040600020612770565b6002546040516323b872dd60e01b6020820152336024820152306044820152606480820185905281526001600160a01b03909116929060a08101908082106001600160401b0383111761119c57602094611eaf926040526127f4565b81600052600b8352604060002055600782526007604060002001600160ff19825416179055604051602435815260043590827f07aedeaaa47605dac1fb02ecea3128d244eea577d97e042a68813b0ddcdcfa35853393a4604051908152f35b015190508680611e26565b90601f19831691600b850160005260206000209260005b818110611f6f5750916001939185600b969410611f56575b505050811b01910155611e3c565b015160001960f88460031b161c19169055868080611f48565b92936020600181928786015181550195019301611f30565b600b84016000526020600020601f840160051c810160208510611fc7575b601f830160051c82018110611fbb575050611e0a565b60008155600101611fa5565b5080611fa5565b015190508780611d7d565b906009850160005260206000209160005b601f198516811061203557509183916001936101809695601f1981161061201c575b505050811b016009840155611d95565b015160001960f88460031b161c1916905587808061200c565b91926020600181928685015181550194019201611fea565b600985016000526020600020601f840160051c81016020851061208d575b601f830160051c82018110612081575050611d5f565b6000815560010161206b565b508061206b565b015190508680611d1a565b9250600885016000526020600020906000935b601f19841685106120f6576001945083601f198116106120dd575b505050811b016008830155611d32565b015160001960f88460031b161c191690558680806120cd565b818101518355602094850194600190930192909101906120b2565b909150600885016000526020600020601f840160051c81016020851061215d575b90849392915b601f830160051c8201811061214e575050611d03565b60008155859450600101612138565b5080612132565b60405162461bcd60e51b815260206004820152601f60248201527f4475726174696f6e206d7573742062652067726561746572207468616e2030006044820152606490fd5b60405162461bcd60e51b81526020600482015260126024820152714e6f6465206e6f7420617661696c61626c6560701b6044820152606490fd5b346102a0576121f136612495565b6121f96126e9565b8160005260206007815260406000209160ff600a84015416156123235783600052600b825260406000205461222f8115156128d9565b6000858152600b8452604081205581156122dc575060048301549260fa840284810460fa1485151715610407577f5a87909bff68caaaaf0b3fd9c74eeccc928832f879315e5c6fb7a73612f26c0c946122b49161229f60018060a01b039283600254168460028801541690612925565b61271082600254169104916001541690612925565b546000526006825260096040600020016122ce8154612761565b90555b6040519015158152a2005b6002546001909401547f5a87909bff68caaaaf0b3fd9c74eeccc928832f879315e5c6fb7a73612f26c0c9461231e92916001600160a01b039081169116612925565b6122d1565b60405162461bcd60e51b815260048101839052600a6024820152694e6f206469737075746560b01b6044820152606490fd5b346102a05760003660031901126102a0576002546040516001600160a01b039091168152602090f35b346102a05760203660031901126102a05760043560008181526007602052604090206001810180546001600160a01b03929083163303612437576007019283549360ff85166006811015610253576001036124025760046107a29560ff1916179055600052600b602052604060002091600083549355806002541691541690612925565b60405162461bcd60e51b815260206004820152600d60248201526c10d85b9b9bdd0818d85b98d95b609a1b6044820152606490fd5b60405162461bcd60e51b815260206004820152600e60248201526d139bdd081a9bd88818db1a595b9d60921b6044820152606490fd5b346102a05760203660031901126102a057602090600435600052600b82526040600020548152f35b60409060031901126102a0576004359060243580151581036102a05790565b6101a081019081106001600160401b0382111761119c57604052565b61016081019081106001600160401b0382111761119c57604052565b90601f801991011681019081106001600160401b0382111761119c57604052565b81601f820112156102a0578035906001600160401b03821161119c5760405192612541601f8401601f1916602001856124ec565b828452602083830101116102a057816000926020809301838601378301015290565b600435906001600160a01b03821682036102a057565b80548210156108df5760005260206000200190600090565b919082519283825260005b8481106125bd575050826000602080949584010152601f8019910116010190565b60208183018101518483018201520161259c565b90600182811c92168015612601575b60208310146125eb57565b634e487b7160e01b600052602260045260246000fd5b91607f16916125e0565b906000929180549161261c836125d1565b91828252600193848116908160001461267e575060011461263e575b50505050565b90919394506000526020928360002092846000945b83861061266a575050505001019038808080612638565b805485870183015294019385908201612653565b9294505050602093945060ff191683830152151560051b01019038808080612638565b9060068210156102535752565b6020908160408183019282815285518094520193019160005b8281106126d5575050505090565b8351855293810193928101926001016126c7565b6001546001600160a01b031633036126fd57565b60405163118cdaa760e01b8152336004820152602490fd5b1561271c57565b60405162461bcd60e51b815260206004820152601c60248201527f5072696365206d7573742062652067726561746572207468616e2030000000006044820152606490fd5b60001981146104075760010190565b80546801000000000000000081101561119c5761279291600182018155612579565b819291549060031b91821b91600019901b1916179055565b156127b157565b60405162461bcd60e51b815260206004820152600e60248201526d2737ba103737b2329037bbb732b960911b6044820152606490fd5b9190820180921161040757565b906000602091828151910182855af115612850576000513d61284757506001600160a01b0381163b155b6128255750565b604051635274afe760e01b81526001600160a01b039091166004820152602490fd5b6001141561281e565b6040513d6000823e3d90fd5b1561286357565b60405162461bcd60e51b815260206004820152600e60248201526d139bdd08185d5d1a1bdc9a5e995960921b6044820152606490fd5b156128a057565b60405162461bcd60e51b8152602060048201526011602482015270129bd8881b9bdd0818dbdb5c1b195d1959607a1b6044820152606490fd5b156128e057565b60405162461bcd60e51b815260206004820152601860248201527f5061796d656e7420616c72656164792072656c656173656400000000000000006044820152606490fd5b60405163a9059cbb60e01b60208201526001600160a01b03909216602483015260448083019390935291815260808101916001600160401b0383118284101761119c57612974926040526127f4565b565b6001600160401b03811161119c5760051b6020019056fea2646970667358221220ed934501bc74ed6ca1ca553509cb6db94397dd47a569704ef8323a3e5320c91d64736f6c63430008140033",
+  "deployedBytecode": "0x608080604052600436101561001357600080fd5b60003560e01c9081630c4f321f1461246d575080631dffa3dc1461237e5780633013ce291461235557806334b25ee2146121e35780633d44645c14611ad9578063486fbd7914611a8f5780634afedcd614611a3b5780634b9d4bab146119e157806352a662a31461143257806353e215f414611253578063560d52d4146112375780635aef573c14610f61578063715018a614610f0457806372143f4114610df35780637e4dcc0614610dd55780637f4497d814610b8557806388685cd9146109c05780638da5cb5b146109975780638df32711146107fc5780638facd859146107a457806395ccea6714610765578063a3590e4b14610739578063aa0b5988146106df578063be452e0414610667578063cf2646c2146105e3578063e13242dd146105c2578063e1f1c4a7146105a5578063eb1140aa14610464578063eb96e6591461032e578063f2fde38b146102a55763f72d3a7e1461017457600080fd5b346102a0576020806003193601126102a0576004356000818152600783526040902060028101549092906001600160a01b0316330361026957600783019283549360ff851660068110156102535760010361021d5760027fe3afe40bf62af5d61e451ce5ac1a16baa282148052ee6bd241deb3cd0242d21a949542600585015560ff191617905554600052600a815260406000206102128154612761565b9055604051428152a2005b60405162461bcd60e51b815260048101849052600e60248201526d129bd8881b9bdd08199d5b99195960921b6044820152606490fd5b634e487b7160e01b600052602160045260246000fd5b6064906040519062461bcd60e51b82526004820152601060248201526f2737ba103537b110383937bb34b232b960811b6044820152fd5b600080fd5b346102a05760203660031901126102a0576102be612563565b6102c66126e9565b6001600160a01b0390811690811561031557600154826001600160601b0360a01b821617600155167f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0600080a3005b604051631e4fbdf760e01b815260006004820152602490fd5b346102a0576020806003193601126102a05760043590816000526007815260406000209061037360018060a01b03806001850154163314908115610454575b5061285c565b60078201805460ff811660068110156102535760020361041d5760039042600686015560ff19161790558154600052600a81526040600020918254928315610407577f41930f16e103c5d76d3ab5a14c0201a0adab06354e8e99241f5b2ad02566525e93600019019055546000526006815260096040600020600881016103fa8154612761565b9055016102128154612761565b634e487b7160e01b600052601160045260246000fd5b60405162461bcd60e51b815260048101849052600f60248201526e129bd8881b9bdd081cdd185c9d1959608a1b6044820152606490fd5b600285015416331490508561036d565b346102a05760203660031901126102a057600435600052600760205260406000208054600160a01b6001900391826001820154169280600283015416906003830154600484015460058501546006860154600787015460ff169160405193848060088b01906104d29161260b565b036104dd90866124ec565b60405195866104ef8160098d0161260b565b036104fa90886124ec565b600a8a01549860405180600b819d01906105139161260b565b0361051e908c6124ec565b6040519c8d9c8d5260208d015260408c015260608b015260808a015260a089015260c088015260e08701610551916126a1565b6101a080610100880152860161056691612591565b85810361012087015261057891612591565b9160ff8116151561014086015260081c166101608401528281036101808401526105a191612591565b0390f35b346102a05760003660031901126102a05760206040516127108152f35b346102a05760203660031901126102a0576105db6126e9565b600435600355005b346102a0576020806003193601126102a0576001600160a01b03610605612563565b1660005260098152604060002090604051908181845491828152019360005281600020916000905b828210610650576105a185610644818903826124ec565b604051918291826126ae565b83548652948501946001938401939091019061062d565b346102a0576020806003193601126102a0576001600160a01b03610689612563565b1660005260088152604060002090604051908181845491828152019360005281600020916000905b8282106106c8576105a185610644818903826124ec565b8354865294850194600193840193909101906106b1565b346102a05760203660031901126102a0576106f86126e9565b6103e86004351161070557005b60405162461bcd60e51b815260206004820152600c60248201526b08ccaca40e8dede40d0d2ced60a31b6044820152606490fd5b346102a05760203660031901126102a057600435600052600a6020526020604060002054604051908152f35b346102a05760403660031901126102a0576107a2610781612563565b6107896126e9565b600154602435916001600160a01b039182169116612925565b005b346102a05760403660031901126102a0576107bd612563565b6001600160a01b03166000908152600960205260409020805460243591908210156102a0576020916107ee91612579565b90546040519160031b1c8152f35b346102a0576020806003193601126102a0576004356001600160401b0381116102a05761082d90369060040161250d565b600091600191600454925b838110610927575061084984612976565b9361085760405195866124ec565b808552610866601f1991612976565b01368386013760009060015b84811061088757604051806105a188826126ae565b8060005260068452604060002060ff60078201541690816108f5575b506108b7575b6108b290612761565b610872565b9185518110156108df576108d78184866108b29460051b8a010152612761565b9290506108a9565b634e487b7160e01b600052603260045260246000fd5b600191506109149061090d604051809481930161260b565b03826124ec565b84815191012082518584012014876108a3565b8060005260068352604060002060ff600782015416908161096c575b50610957575b61095290612761565b610838565b9361096461095291612761565b949050610949565b600191506109849061090d604051809481930161260b565b8381519101208251848401201486610943565b346102a05760003660031901126102a0576001546040516001600160a01b039091168152602090f35b346102a0576020806003193601126102a057600435600260005414610b735760026000558060005260078252604060002060ff6007820154166006811015610253576003610a0e9114612899565b60ff600a82015416610b3f57610a2b6006820154600354906127e7565b4210801590610b29575b15610ae45781600052600b8352610a5260406000205415156128d9565b81600052600b83526000604081205560048101549260fa840284810460fa1485151715610407577f21d71db5be59bb9fa133895586b7404307dd33fb93b16db09dc6f1d9d7d231b092610ad360018060a01b0392610abd886002868154169501948686541690612925565b6127108460025416910490846001541690612925565b541693604051908152a36001600055005b60405162461bcd60e51b815260048101849052601960248201527f446973707574652077696e646f77206e6f7420706173736564000000000000006044820152606490fd5b5060018101546001600160a01b03163314610a35565b60405162461bcd60e51b815260048101849052600c60248201526b129bd888191a5cdc1d5d195960a21b6044820152606490fd5b604051633ee5aeb560e01b8152600490fd5b346102a05760203660031901126102a0576060610180604051610ba7816124b4565b60008152600060208201526000604082015260008382015260006080820152600060a0820152600060c0820152600060e0820152826101008201528261012082015260006101408201526000610160820152015260043560005260076020526040600020604051610c17816124b4565b8154815260018201546001600160a01b03908116602083015260028301541660408201526003820154606082015260048201546080820152600582015460a082015260068083015460c0830152600783015460ff16929083101561025357610ced600b916105a19460e0850152604051610c988161090d816008860161260b565b610100850152604051610cb28161090d816009860161260b565b610120850152600a81015460ff8116151561014086015260081c6001600160a01b031661016085015260405192839161090d9183910161260b565b610180820152604051918291602083528051602084015260018060a01b03602082015116604084015260018060a01b03604082015116606084015260608101516080840152608081015160a084015260a081015160c084015260c081015160e0840152610d6360e08201516101008501906126a1565b610100810151610d826101a091826101208701526101c0860190612591565b90610180610da461012085015193601f199485898303016101408a0152612591565b93610140810151151561016088015260018060a01b0361016082015116828801520151918584030190850152612591565b346102a05760003660031901126102a0576020600354604051908152f35b346102a05760203660031901126102a0576004356000526006602052604060002060018060a01b038154166105a160405192610e3d84610e36816001850161260b565b03856124ec565b600a60028201549160038101546004820154610edd60405195610e6e87610e67816005890161260b565b03886124ec565b60068501549660ff60078701541693600887015495610ea3600989015498610e9c604051809c81930161260b565b038a6124ec565b610ec06040519d8e9d8e528d610160908160208201520190612591565b9360408d015260608c015260808b015289820360a08b0152612591565b9460c0880152151560e0870152610100860152610120850152838203610140850152612591565b346102a05760003660031901126102a057610f1d6126e9565b600180546001600160a01b031981169091556000906001600160a01b03167f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e08280a3005b346102a05760403660031901126102a0576001600160401b036004356024358281116102a057610f9590369060040161250d565b816000526020926007845260406000209060018060a01b0391610fc96001938085840154163314908115611227575061285c565b60ff6007820154166006811015610253576003610fe69114612899565b600a8101805460ff81166111ef576110056006840154600354906127e7565b42116111b257610100600160a81b031985166001600160a81b0319909116173360081b610100600160a81b0316179055600b0191835191821161119c5761104c83546125d1565b601f8111611153575b5085601f83116001146110c9579180806110b995937f1b84372106d77c6daea0dda35bbc0229d10a83f58ec89909288492519368234197956000936110be575b501b916000199060031b1c19161790555b6040519182918683523396830190612591565b0390a3005b86015192508a611095565b601f9291921982169084600052876000209160005b8982821061113f5750509183916110b996947f1b84372106d77c6daea0dda35bbc0229d10a83f58ec89909288492519368234198969410611126575b5050811b0190556110a6565b85015160001960f88460031b161c19169055888061111a565b8884015185559386019392830192016110de565b8360005286600020601f840160051c810191888510611192575b601f0160051c019082905b828110611186575050611055565b60008155018290611178565b909150819061116d565b634e487b7160e01b600052604160045260246000fd5b60405162461bcd60e51b8152600481018990526015602482015274111a5cdc1d5d19481dda5b991bddc81c185cdcd959605a1b6044820152606490fd5b60405162461bcd60e51b815260048101899052601060248201526f105b1c9958591e48191a5cdc1d5d195960821b6044820152606490fd5b600284015416331490508861036d565b346102a05760003660031901126102a057602060405160fa8152f35b346102a05760203660031901126102a0576060610140604051611275816124d0565b6000815282602082015260006040820152600083820152600060808201528260a0820152600060c0820152600060e082015260006101008201526000610120820152015260043560005260066020526105a16040600020600a61137a604051926112de846124d0565b80546001600160a01b031684526040516112ff8161090d816001860161260b565b60208501526002810154604085015260038101546060850152600481015460808501526040516113368161090d816005860161260b565b60a0850152600681015460c085015260ff600782015416151560e08501526008810154610100850152600981015461012085015261090d604051809481930161260b565b6101408201526040519182916020835260018060a01b03815116602084015260208101516113b661016091826040870152610180860190612591565b906040830151606086015260608301516080860152608083015160a08601526101406113f460a085015193601f1994858983030160c08a0152612591565b9360c081015160e088015260e08101511515610100880152610100810151610120880152610120810151828801520151918584030190850152612591565b346102a05760e03660031901126102a0576004356001600160401b0381116102a05761146290369060040161250d565b6084356001600160401b0381116102a05761148190369060040161250d565b9060c4356001600160401b0381116102a0576114a190369060040161250d565b6114ae60a4351515612715565b6024351561199d576044351561195857600454926114cb84612761565b600455604051926114db846124d0565b338452602084015260243560408401526044356060840152606435608084015260a083015260a43560c0830152600160e08301526000610100830152600061012083015261014082015281600052600660205260406000209160018060a01b038251166001600160601b0360a01b84541617835560208201519283516001600160401b03811161119c5761157260018301546125d1565b601f8111611911575b506020601f82116001146118a2578192939495600092611897575b50508160011b916000199060031b1c19161760018201555b60408301516002820155606083015160038201556080830151600482015560a08301518051906001600160401b03821161119c576115ef60058401546125d1565b601f8111611850575b50602090601f83116001146117da5791806101409492600a946000926117cf575b50508160011b916000199060031b1c19161760058201555b60c0850151600682015561165a60e08601511515600783019060ff801983541691151516179055565b6101008501516008820155610120850151600982015501920151908151926001600160401b03841161119c5761169081546125d1565b93601f8511611787575b602094508493601f8211600114611724579381929394600092611719575b50508160011b916000199060031b1c19161790555b33600052600882526116e3816040600020612770565b8060405160a43581527f9ae856703585c6656a94de0b9fa016ae1dab239ff224e877e311fa47d796e341843392a3604051908152f35b0151905085806116b8565b601f1982169483600052866000209160005b878110611770575083600195969710611757575b505050811b0190556116cd565b015160001960f88460031b161c1916905585808061174a565b919288600181928685015181550194019201611736565b816000526020600020601f820160051c810195602083106117c5575b601f0160051c01945b8581106117b9575061169a565b600081556001016117ac565b90955085906117a3565b015190508780611619565b906005840160005260206000209160005b601f19851681106118385750926101409492600192600a9583601f1981161061181f575b505050811b016005820155611631565b015160001960f88460031b161c1916905587808061180f565b919260206001819286850151815501940192016117eb565b600584016000526020600020601f840160051c810160208510611890575b601f830160051c820181106118845750506115f8565b6000815560010161186e565b508061186e565b015190508580611596565b6001830160005260206000209060005b601f19841681106118f9575060019394959683601f198116106118e0575b505050811b0160018201556115ae565b015160001960f88460031b161c191690558580806118d0565b9091602060018192858b0151815501930191016118b2565b600183016000526020600020601f830160051c810160208410611951575b601f830160051c8201811061194557505061157b565b6000815560010161192f565b508061192f565b60405162461bcd60e51b815260206004820152601d60248201527f4d656d6f7279206d7573742062652067726561746572207468616e20300000006044820152606490fd5b606460405162461bcd60e51b815260206004820152602060248201527f43505520636f726573206d7573742062652067726561746572207468616e20306044820152fd5b346102a05760403660031901126102a05760043560243590806000526006602052611a1a60018060a01b036040600020541633146127aa565b611a25821515612715565b6000526006602052600660406000200155600080f35b346102a0576107a2611a4c36612495565b90806000526006602052611a6e60018060a01b036040600020541633146127aa565b600052600660205260076040600020019060ff801983541691151516179055565b346102a05760403660031901126102a057611aa8612563565b6001600160a01b03166000908152600860205260409020805460243591908210156102a0576020916107ee91612579565b346102a05760803660031901126102a0576044356001600160401b0381116102a057611b0990369060040161250d565b6064356001600160401b0381116102a057611b2890369060040161250d565b600435600052600660205260ff60076040600020015416156121a9576024351561216457600435600052600660205260406000209060068201549060243582029180830460243514901517156104075760fa820282810460fa148315171561040757612710611b989104836127e7565b9360055493611ba685612761565b6005555460405193906001600160a01b0316611bc1856124b4565b6004358552336020860152604085015260243560608501526080840152600060a0840152600060c0840152600060e0840152610100830152610120820152600061014082015260006101608201526040518060208101106001600160401b0360208301111761119c576020810160405260008152610180820152816000526007602052604060002090805182556001820160018060a01b03602083015116906001600160601b0360a01b9182825416179055600283019060018060a01b0360408401511690825416179055606081015160038301556080810151600483015560a0810151600583015560c0810151600683015560e081015160068110156102535760ff801960078501541691161760078301556101008101518051906001600160401b03821161119c578190611cfa60088601546125d1565b601f8111612111575b50602090601f831160011461209f57600092612094575b50508160011b916000199060031b1c19161760088301555b6101208101518051906001600160401b03821161119c57611d5660098501546125d1565b601f811161204d575b50602090601f8311600114611fd95761018093929160009183611fce575b50508160011b916000199060031b1c19161760098401555b611de1600a8401611db96101408401511515829060ff801983541691151516179055565b6101608301518154610100600160a81b03191660089190911b610100600160a81b0316179055565b01518051906001600160401b03821161119c57611e01600b8401546125d1565b601f8111611f87575b50602090601f8311600114611f1957600b929160009183611f0e575b50508160011b916000199060031b1c1916179101555b336000526009602052611e53816040600020612770565b6002546040516323b872dd60e01b6020820152336024820152306044820152606480820185905281526001600160a01b03909116929060a08101908082106001600160401b0383111761119c57602094611eaf926040526127f4565b81600052600b8352604060002055600782526007604060002001600160ff19825416179055604051602435815260043590827f07aedeaaa47605dac1fb02ecea3128d244eea577d97e042a68813b0ddcdcfa35853393a4604051908152f35b015190508680611e26565b90601f19831691600b850160005260206000209260005b818110611f6f5750916001939185600b969410611f56575b505050811b01910155611e3c565b015160001960f88460031b161c19169055868080611f48565b92936020600181928786015181550195019301611f30565b600b84016000526020600020601f840160051c810160208510611fc7575b601f830160051c82018110611fbb575050611e0a565b60008155600101611fa5565b5080611fa5565b015190508780611d7d565b906009850160005260206000209160005b601f198516811061203557509183916001936101809695601f1981161061201c575b505050811b016009840155611d95565b015160001960f88460031b161c1916905587808061200c565b91926020600181928685015181550194019201611fea565b600985016000526020600020601f840160051c81016020851061208d575b601f830160051c82018110612081575050611d5f565b6000815560010161206b565b508061206b565b015190508680611d1a565b9250600885016000526020600020906000935b601f19841685106120f6576001945083601f198116106120dd575b505050811b016008830155611d32565b015160001960f88460031b161c191690558680806120cd565b818101518355602094850194600190930192909101906120b2565b909150600885016000526020600020601f840160051c81016020851061215d575b90849392915b601f830160051c8201811061214e575050611d03565b60008155859450600101612138565b5080612132565b60405162461bcd60e51b815260206004820152601f60248201527f4475726174696f6e206d7573742062652067726561746572207468616e2030006044820152606490fd5b60405162461bcd60e51b81526020600482015260126024820152714e6f6465206e6f7420617661696c61626c6560701b6044820152606490fd5b346102a0576121f136612495565b6121f96126e9565b8160005260206007815260406000209160ff600a84015416156123235783600052600b825260406000205461222f8115156128d9565b6000858152600b8452604081205581156122dc575060048301549260fa840284810460fa1485151715610407577f5a87909bff68caaaaf0b3fd9c74eeccc928832f879315e5c6fb7a73612f26c0c946122b49161229f60018060a01b039283600254168460028801541690612925565b61271082600254169104916001541690612925565b546000526006825260096040600020016122ce8154612761565b90555b6040519015158152a2005b6002546001909401547f5a87909bff68caaaaf0b3fd9c74eeccc928832f879315e5c6fb7a73612f26c0c9461231e92916001600160a01b039081169116612925565b6122d1565b60405162461bcd60e51b815260048101839052600a6024820152694e6f206469737075746560b01b6044820152606490fd5b346102a05760003660031901126102a0576002546040516001600160a01b039091168152602090f35b346102a05760203660031901126102a05760043560008181526007602052604090206001810180546001600160a01b03929083163303612437576007019283549360ff85166006811015610253576001036124025760046107a29560ff1916179055600052600b602052604060002091600083549355806002541691541690612925565b60405162461bcd60e51b815260206004820152600d60248201526c10d85b9b9bdd0818d85b98d95b609a1b6044820152606490fd5b60405162461bcd60e51b815260206004820152600e60248201526d139bdd081a9bd88818db1a595b9d60921b6044820152606490fd5b346102a05760203660031901126102a057602090600435600052600b82526040600020548152f35b60409060031901126102a0576004359060243580151581036102a05790565b6101a081019081106001600160401b0382111761119c57604052565b61016081019081106001600160401b0382111761119c57604052565b90601f801991011681019081106001600160401b0382111761119c57604052565b81601f820112156102a0578035906001600160401b03821161119c5760405192612541601f8401601f1916602001856124ec565b828452602083830101116102a057816000926020809301838601378301015290565b600435906001600160a01b03821682036102a057565b80548210156108df5760005260206000200190600090565b919082519283825260005b8481106125bd575050826000602080949584010152601f8019910116010190565b60208183018101518483018201520161259c565b90600182811c92168015612601575b60208310146125eb57565b634e487b7160e01b600052602260045260246000fd5b91607f16916125e0565b906000929180549161261c836125d1565b91828252600193848116908160001461267e575060011461263e575b50505050565b90919394506000526020928360002092846000945b83861061266a575050505001019038808080612638565b805485870183015294019385908201612653565b9294505050602093945060ff191683830152151560051b01019038808080612638565b9060068210156102535752565b6020908160408183019282815285518094520193019160005b8281106126d5575050505090565b8351855293810193928101926001016126c7565b6001546001600160a01b031633036126fd57565b60405163118cdaa760e01b8152336004820152602490fd5b1561271c57565b60405162461bcd60e51b815260206004820152601c60248201527f5072696365206d7573742062652067726561746572207468616e2030000000006044820152606490fd5b60001981146104075760010190565b80546801000000000000000081101561119c5761279291600182018155612579565b819291549060031b91821b91600019901b1916179055565b156127b157565b60405162461bcd60e51b815260206004820152600e60248201526d2737ba103737b2329037bbb732b960911b6044820152606490fd5b9190820180921161040757565b906000602091828151910182855af115612850576000513d61284757506001600160a01b0381163b155b6128255750565b604051635274afe760e01b81526001600160a01b039091166004820152602490fd5b6001141561281e565b6040513d6000823e3d90fd5b1561286357565b60405162461bcd60e51b815260206004820152600e60248201526d139bdd08185d5d1a1bdc9a5e995960921b6044820152606490fd5b156128a057565b60405162461bcd60e51b8152602060048201526011602482015270129bd8881b9bdd0818dbdb5c1b195d1959607a1b6044820152606490fd5b156128e057565b60405162461bcd60e51b815260206004820152601860248201527f5061796d656e7420616c72656164792072656c656173656400000000000000006044820152606490fd5b60405163a9059cbb60e01b60208201526001600160a01b03909216602483015260448083019390935291815260808101916001600160401b0383118284101761119c57612974926040526127f4565b565b6001600160401b03811161119c5760051b6020019056fea2646970667358221220ed934501bc74ed6ca1ca553509cb6db94397dd47a569704ef8323a3e5320c91d64736f6c63430008140033",
+  "devdoc": {
+    "details": "Smart contract for managing compute resource marketplace on Avalanche",
+    "errors": {
+      "OwnableInvalidOwner(address)": [
+        {
+          "details": "The owner is not a valid owner account. (eg. `address(0)`)"
+        }
+      ],
+      "OwnableUnauthorizedAccount(address)": [
+        {
+          "details": "The caller account is not authorized to perform an operation."
+        }
+      ],
+      "ReentrancyGuardReentrantCall()": [
+        {
+          "details": "Unauthorized reentrant call."
+        }
+      ],
+      "SafeERC20FailedOperation(address)": [
+        {
+          "details": "An operation with an ERC-20 token failed."
+        }
+      ]
+    },
+    "kind": "dev",
+    "methods": {
+      "cancelJob(uint256)": {
+        "details": "Cancel job before it starts"
+      },
+      "completeComputeJob(uint256)": {
+        "details": "Complete a compute job (called by client or automatically)"
+      },
+      "createComputeJob(uint256,uint256,string,string)": {
+        "details": "Create a new compute job"
+      },
+      "emergencyWithdraw(address,uint256)": {
+        "details": "Emergency withdrawal (only owner)"
+      },
+      "getAvailableNodes(string)": {
+        "details": "Get available nodes by type"
+      },
+      "getClientJobs(address)": {
+        "details": "Get client's jobs"
+      },
+      "getJobInfo(uint256)": {
+        "details": "Get job information"
+      },
+      "getNodeInfo(uint256)": {
+        "details": "Get node information"
+      },
+      "getProviderNodes(address)": {
+        "details": "Get provider's nodes"
+      },
+      "owner()": {
+        "details": "Returns the address of the current owner."
+      },
+      "raiseDispute(uint256,string)": {
+        "details": "Raise a dispute"
+      },
+      "registerComputeNode(string,uint256,uint256,uint256,string,uint256,string)": {
+        "details": "Register a new compute node"
+      },
+      "releasePayment(uint256)": {
+        "details": "Release payment to provider"
+      },
+      "renounceOwnership()": {
+        "details": "Leaves the contract without owner. It will not be possible to call `onlyOwner` functions. Can only be called by the current owner. NOTE: Renouncing ownership will leave the contract without an owner, thereby disabling any functionality that is only available to the owner."
+      },
+      "resolveDispute(uint256,bool)": {
+        "details": "Resolve dispute (called by platform admin)"
+      },
+      "startComputeJob(uint256)": {
+        "details": "Start a compute job (called by provider)"
+      },
+      "transferOwnership(address)": {
+        "details": "Transfers ownership of the contract to a new account (`newOwner`). Can only be called by the current owner."
+      },
+      "updateDisputeTimeWindow(uint256)": {
+        "details": "Update dispute time window (only owner)"
+      },
+      "updateNodeAvailability(uint256,bool)": {
+        "details": "Update compute node availability"
+      },
+      "updateNodePrice(uint256,uint256)": {
+        "details": "Update compute node pricing"
+      },
+      "updatePlatformFee(uint256)": {
+        "details": "Update platform fee (only owner)"
+      }
+    },
+    "title": "EryzaComputeMarketplace",
+    "version": 1
+  },
+  "userdoc": {
+    "kind": "user",
+    "methods": {},
+    "version": 1
+  },
+  "storageLayout": {
+    "storage": [
+      {
+        "astId": 1606,
+        "contract": "blockchain/contracts/EryzaComputeMarketplace.sol:EryzaComputeMarketplace",
+        "label": "_status",
+        "offset": 0,
+        "slot": "0",
+        "type": "t_uint256"
+      },
+      {
+        "astId": 8,
+        "contract": "blockchain/contracts/EryzaComputeMarketplace.sol:EryzaComputeMarketplace",
+        "label": "_owner",
+        "offset": 0,
+        "slot": "1",
+        "type": "t_address"
+      },
+      {
+        "astId": 1804,
+        "contract": "blockchain/contracts/EryzaComputeMarketplace.sol:EryzaComputeMarketplace",
+        "label": "paymentToken",
+        "offset": 0,
+        "slot": "2",
+        "type": "t_contract(IERC20)967"
+      },
+      {
+        "astId": 1813,
+        "contract": "blockchain/contracts/EryzaComputeMarketplace.sol:EryzaComputeMarketplace",
+        "label": "disputeTimeWindow",
+        "offset": 0,
+        "slot": "3",
+        "type": "t_uint256"
+      },
+      {
+        "astId": 1816,
+        "contract": "blockchain/contracts/EryzaComputeMarketplace.sol:EryzaComputeMarketplace",
+        "label": "nextNodeId",
+        "offset": 0,
+        "slot": "4",
+        "type": "t_uint256"
+      },
+      {
+        "astId": 1819,
+        "contract": "blockchain/contracts/EryzaComputeMarketplace.sol:EryzaComputeMarketplace",
+        "label": "nextJobId",
+        "offset": 0,
+        "slot": "5",
+        "type": "t_uint256"
+      },
+      {
+        "astId": 1824,
+        "contract": "blockchain/contracts/EryzaComputeMarketplace.sol:EryzaComputeMarketplace",
+        "label": "computeNodes",
+        "offset": 0,
+        "slot": "6",
+        "type": "t_mapping(t_uint256,t_struct(ComputeNode)1766_storage)"
+      },
+      {
+        "astId": 1829,
+        "contract": "blockchain/contracts/EryzaComputeMarketplace.sol:EryzaComputeMarketplace",
+        "label": "computeJobs",
+        "offset": 0,
+        "slot": "7",
+        "type": "t_mapping(t_uint256,t_struct(ComputeJob)1794_storage)"
+      },
+      {
+        "astId": 1834,
+        "contract": "blockchain/contracts/EryzaComputeMarketplace.sol:EryzaComputeMarketplace",
+        "label": "providerNodes",
+        "offset": 0,
+        "slot": "8",
+        "type": "t_mapping(t_address,t_array(t_uint256)dyn_storage)"
+      },
+      {
+        "astId": 1839,
+        "contract": "blockchain/contracts/EryzaComputeMarketplace.sol:EryzaComputeMarketplace",
+        "label": "clientJobs",
+        "offset": 0,
+        "slot": "9",
+        "type": "t_mapping(t_address,t_array(t_uint256)dyn_storage)"
+      },
+      {
+        "astId": 1843,
+        "contract": "blockchain/contracts/EryzaComputeMarketplace.sol:EryzaComputeMarketplace",
+        "label": "nodeActiveJobs",
+        "offset": 0,
+        "slot": "10",
+        "type": "t_mapping(t_uint256,t_uint256)"
+      },
+      {
+        "astId": 1847,
+        "contract": "blockchain/contracts/EryzaComputeMarketplace.sol:EryzaComputeMarketplace",
+        "label": "jobEscrow",
+        "offset": 0,
+        "slot": "11",
+        "type": "t_mapping(t_uint256,t_uint256)"
+      }
+    ],
+    "types": {
+      "t_address": {
+        "encoding": "inplace",
+        "label": "address",
+        "numberOfBytes": "20"
+      },
+      "t_array(t_uint256)dyn_storage": {
+        "base": "t_uint256",
+        "encoding": "dynamic_array",
+        "label": "uint256[]",
+        "numberOfBytes": "32"
+      },
+      "t_bool": {
+        "encoding": "inplace",
+        "label": "bool",
+        "numberOfBytes": "1"
+      },
+      "t_contract(IERC20)967": {
+        "encoding": "inplace",
+        "label": "contract IERC20",
+        "numberOfBytes": "20"
+      },
+      "t_enum(JobStatus)1801": {
+        "encoding": "inplace",
+        "label": "enum EryzaComputeMarketplace.JobStatus",
+        "numberOfBytes": "1"
+      },
+      "t_mapping(t_address,t_array(t_uint256)dyn_storage)": {
+        "encoding": "mapping",
+        "key": "t_address",
+        "label": "mapping(address => uint256[])",
+        "numberOfBytes": "32",
+        "value": "t_array(t_uint256)dyn_storage"
+      },
+      "t_mapping(t_uint256,t_struct(ComputeJob)1794_storage)": {
+        "encoding": "mapping",
+        "key": "t_uint256",
+        "label": "mapping(uint256 => struct EryzaComputeMarketplace.ComputeJob)",
+        "numberOfBytes": "32",
+        "value": "t_struct(ComputeJob)1794_storage"
+      },
+      "t_mapping(t_uint256,t_struct(ComputeNode)1766_storage)": {
+        "encoding": "mapping",
+        "key": "t_uint256",
+        "label": "mapping(uint256 => struct EryzaComputeMarketplace.ComputeNode)",
+        "numberOfBytes": "32",
+        "value": "t_struct(ComputeNode)1766_storage"
+      },
+      "t_mapping(t_uint256,t_uint256)": {
+        "encoding": "mapping",
+        "key": "t_uint256",
+        "label": "mapping(uint256 => uint256)",
+        "numberOfBytes": "32",
+        "value": "t_uint256"
+      },
+      "t_string_storage": {
+        "encoding": "bytes",
+        "label": "string",
+        "numberOfBytes": "32"
+      },
+      "t_struct(ComputeJob)1794_storage": {
+        "encoding": "inplace",
+        "label": "struct EryzaComputeMarketplace.ComputeJob",
+        "members": [
+          {
+            "astId": 1768,
+            "contract": "blockchain/contracts/EryzaComputeMarketplace.sol:EryzaComputeMarketplace",
+            "label": "nodeId",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_uint256"
+          },
+          {
+            "astId": 1770,
+            "contract": "blockchain/contracts/EryzaComputeMarketplace.sol:EryzaComputeMarketplace",
+            "label": "client",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_address"
+          },
+          {
+            "astId": 1772,
+            "contract": "blockchain/contracts/EryzaComputeMarketplace.sol:EryzaComputeMarketplace",
+            "label": "provider",
+            "offset": 0,
+            "slot": "2",
+            "type": "t_address"
+          },
+          {
+            "astId": 1774,
+            "contract": "blockchain/contracts/EryzaComputeMarketplace.sol:EryzaComputeMarketplace",
+            "label": "duration",
+            "offset": 0,
+            "slot": "3",
+            "type": "t_uint256"
+          },
+          {
+            "astId": 1776,
+            "contract": "blockchain/contracts/EryzaComputeMarketplace.sol:EryzaComputeMarketplace",
+            "label": "totalCost",
+            "offset": 0,
+            "slot": "4",
+            "type": "t_uint256"
+          },
+          {
+            "astId": 1778,
+            "contract": "blockchain/contracts/EryzaComputeMarketplace.sol:EryzaComputeMarketplace",
+            "label": "startTime",
+            "offset": 0,
+            "slot": "5",
+            "type": "t_uint256"
+          },
+          {
+            "astId": 1780,
+            "contract": "blockchain/contracts/EryzaComputeMarketplace.sol:EryzaComputeMarketplace",
+            "label": "endTime",
+            "offset": 0,
+            "slot": "6",
+            "type": "t_uint256"
+          },
+          {
+            "astId": 1783,
+            "contract": "blockchain/contracts/EryzaComputeMarketplace.sol:EryzaComputeMarketplace",
+            "label": "status",
+            "offset": 0,
+            "slot": "7",
+            "type": "t_enum(JobStatus)1801"
+          },
+          {
+            "astId": 1785,
+            "contract": "blockchain/contracts/EryzaComputeMarketplace.sol:EryzaComputeMarketplace",
+            "label": "jobType",
+            "offset": 0,
+            "slot": "8",
+            "type": "t_string_storage"
+          },
+          {
+            "astId": 1787,
+            "contract": "blockchain/contracts/EryzaComputeMarketplace.sol:EryzaComputeMarketplace",
+            "label": "jobConfig",
+            "offset": 0,
+            "slot": "9",
+            "type": "t_string_storage"
+          },
+          {
+            "astId": 1789,
+            "contract": "blockchain/contracts/EryzaComputeMarketplace.sol:EryzaComputeMarketplace",
+            "label": "disputed",
+            "offset": 0,
+            "slot": "10",
+            "type": "t_bool"
+          },
+          {
+            "astId": 1791,
+            "contract": "blockchain/contracts/EryzaComputeMarketplace.sol:EryzaComputeMarketplace",
+            "label": "disputer",
+            "offset": 1,
+            "slot": "10",
+            "type": "t_address"
+          },
+          {
+            "astId": 1793,
+            "contract": "blockchain/contracts/EryzaComputeMarketplace.sol:EryzaComputeMarketplace",
+            "label": "disputeReason",
+            "offset": 0,
+            "slot": "11",
+            "type": "t_string_storage"
+          }
+        ],
+        "numberOfBytes": "384"
+      },
+      "t_struct(ComputeNode)1766_storage": {
+        "encoding": "inplace",
+        "label": "struct EryzaComputeMarketplace.ComputeNode",
+        "members": [
+          {
+            "astId": 1745,
+            "contract": "blockchain/contracts/EryzaComputeMarketplace.sol:EryzaComputeMarketplace",
+            "label": "provider",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_address"
+          },
+          {
+            "astId": 1747,
+            "contract": "blockchain/contracts/EryzaComputeMarketplace.sol:EryzaComputeMarketplace",
+            "label": "nodeType",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_string_storage"
+          },
+          {
+            "astId": 1749,
+            "contract": "blockchain/contracts/EryzaComputeMarketplace.sol:EryzaComputeMarketplace",
+            "label": "cpuCores",
+            "offset": 0,
+            "slot": "2",
+            "type": "t_uint256"
+          },
+          {
+            "astId": 1751,
+            "contract": "blockchain/contracts/EryzaComputeMarketplace.sol:EryzaComputeMarketplace",
+            "label": "memoryGB",
+            "offset": 0,
+            "slot": "3",
+            "type": "t_uint256"
+          },
+          {
+            "astId": 1753,
+            "contract": "blockchain/contracts/EryzaComputeMarketplace.sol:EryzaComputeMarketplace",
+            "label": "gpuCount",
+            "offset": 0,
+            "slot": "4",
+            "type": "t_uint256"
+          },
+          {
+            "astId": 1755,
+            "contract": "blockchain/contracts/EryzaComputeMarketplace.sol:EryzaComputeMarketplace",
+            "label": "gpuType",
+            "offset": 0,
+            "slot": "5",
+            "type": "t_string_storage"
+          },
+          {
+            "astId": 1757,
+            "contract": "blockchain/contracts/EryzaComputeMarketplace.sol:EryzaComputeMarketplace",
+            "label": "pricePerHour",
+            "offset": 0,
+            "slot": "6",
+            "type": "t_uint256"
+          },
+          {
+            "astId": 1759,
+            "contract": "blockchain/contracts/EryzaComputeMarketplace.sol:EryzaComputeMarketplace",
+            "label": "available",
+            "offset": 0,
+            "slot": "7",
+            "type": "t_bool"
+          },
+          {
+            "astId": 1761,
+            "contract": "blockchain/contracts/EryzaComputeMarketplace.sol:EryzaComputeMarketplace",
+            "label": "totalJobs",
+            "offset": 0,
+            "slot": "8",
+            "type": "t_uint256"
+          },
+          {
+            "astId": 1763,
+            "contract": "blockchain/contracts/EryzaComputeMarketplace.sol:EryzaComputeMarketplace",
+            "label": "successfulJobs",
+            "offset": 0,
+            "slot": "9",
+            "type": "t_uint256"
+          },
+          {
+            "astId": 1765,
+            "contract": "blockchain/contracts/EryzaComputeMarketplace.sol:EryzaComputeMarketplace",
+            "label": "endpoint",
+            "offset": 0,
+            "slot": "10",
+            "type": "t_string_storage"
+          }
+        ],
+        "numberOfBytes": "352"
+      },
+      "t_uint256": {
+        "encoding": "inplace",
+        "label": "uint256",
+        "numberOfBytes": "32"
+      }
+    }
+  }
+}

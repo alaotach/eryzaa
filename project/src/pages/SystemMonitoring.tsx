@@ -1,137 +1,96 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import Card from '../components/UI/Card';
+import { useWeb3 } from '../contexts/Web3Context';
 
 interface SystemMetrics {
-  total_gpus: number;
-  rented_gpus: number;
-  available_gpus: number;
-  active_subnets: number;
+  total_nodes: number;
+  active_nodes: number;
+  available_nodes: number;
+  total_jobs: number;
+  active_jobs: number;
   total_compute_power: number;
-  total_memory: number;
-  avg_system_utilization: number;
   blockchain_connected: boolean;
   last_updated: string;
+  network_name: string;
 }
 
-interface GPUMetrics {
-  gpu_id: string;
-  utilization: number;
-  temperature: number;
-  power_draw: number;
-  memory_used: number;
-  memory_total: number;
-  compute_power: number;
-  is_rented: boolean;
-  current_subnet?: string;
-  last_updated: string;
-}
-
-interface SubnetMetrics {
-  subnet_id: string;
-  coordinator: string;
+interface NodeMetrics {
+  node_id: number;
+  node_type: string;
+  cpu_cores: number;
+  memory_gb: number;
   gpu_count: number;
-  total_compute: number;
-  total_memory: number;
-  avg_utilization: number;
-  avg_temperature: number;
-  total_power_draw: number;
-  active: boolean;
-  created_at: string;
-  purpose: string;
+  gpu_type: string;
+  price_per_hour: string;
+  is_active: boolean;
+  current_jobs: number;
+  provider: string;
 }
 
 const SystemMonitoringDashboard: React.FC = () => {
   const [systemMetrics, setSystemMetrics] = useState<SystemMetrics | null>(null);
-  const [gpuMetrics, setGpuMetrics] = useState<{ [key: string]: GPUMetrics }>({});
-  const [subnetMetrics, setSubnetMetrics] = useState<{ [key: string]: SubnetMetrics }>({});
-  const [connectionStatus, setConnectionStatus] = useState<'connecting' | 'connected' | 'disconnected'>('disconnected');
-  const [systemWs, setSystemWs] = useState<WebSocket | null>(null);
+  const [nodeMetrics, setNodeMetrics] = useState<NodeMetrics[]>([]);
+  const { availableNodes, userJobs, isConnected } = useWeb3();
 
-  // WebSocket connection for real-time system metrics
-  const connectSystemWebSocket = useCallback(() => {
-    if (systemWs?.readyState === WebSocket.OPEN) return;
-
-    const ws = new WebSocket('ws://localhost:8000/api/v1/monitoring/ws/system');
-    
-    ws.onopen = () => {
-      console.log('System WebSocket connected');
-      setConnectionStatus('connected');
-    };
-
-    ws.onmessage = (event) => {
-      try {
-        const data = JSON.parse(event.data);
-        if (data.type === 'system_metrics') {
-          setSystemMetrics(data.data);
-        }
-      } catch (error) {
-        console.error('Error parsing WebSocket message:', error);
-      }
-    };
-
-    ws.onclose = () => {
-      console.log('System WebSocket disconnected');
-      setConnectionStatus('disconnected');
-      // Reconnect after 3 seconds
-      setTimeout(connectSystemWebSocket, 3000);
-    };
-
-    ws.onerror = (error) => {
-      console.error('System WebSocket error:', error);
-      setConnectionStatus('disconnected');
-    };
-
-    setSystemWs(ws);
-  }, [systemWs]);
-
-  // Fetch initial data via REST API
-  const fetchInitialData = async () => {
-    try {
-      // Fetch system metrics
-      const systemResponse = await fetch('/api/v1/monitoring/system');
-      if (systemResponse.ok) {
-        const systemData = await systemResponse.json();
-        setSystemMetrics(systemData.data);
-      }
-
-      // Fetch GPU metrics
-      const gpuResponse = await fetch('/api/v1/monitoring/gpus');
-      if (gpuResponse.ok) {
-        const gpuData = await gpuResponse.json();
-        setGpuMetrics(gpuData.data);
-      }
-
-      // Fetch subnet metrics
-      const subnetResponse = await fetch('/api/v1/monitoring/subnets');
-      if (subnetResponse.ok) {
-        const subnetData = await subnetResponse.json();
-        setSubnetMetrics(subnetData.data);
-      }
-    } catch (error) {
-      console.error('Error fetching initial data:', error);
+  // Convert blockchain data to system metrics
+  const updateMetricsFromBlockchain = useCallback(() => {
+    if (isConnected) {
+      const activeJobs = userJobs.filter(job => job.status === 1 || job.status === 2).length;
+      
+      const metrics: SystemMetrics = {
+        total_nodes: availableNodes.length,
+        active_nodes: availableNodes.length,
+        available_nodes: availableNodes.length,
+        total_jobs: userJobs.length,
+        active_jobs: activeJobs,
+        total_compute_power: availableNodes.reduce((sum, node) => sum + (node.cpuCores * 2.5), 0),
+        blockchain_connected: isConnected,
+        last_updated: new Date().toISOString(),
+        network_name: 'Avalanche Fuji Testnet'
+      };
+      
+      setSystemMetrics(metrics);
+      
+      // Convert nodes to metrics format
+      const nodeData: NodeMetrics[] = availableNodes.map(node => ({
+        node_id: node.id,
+        node_type: node.nodeType,
+        cpu_cores: node.cpuCores,
+        memory_gb: node.memoryGB,
+        gpu_count: node.gpuCount,
+        gpu_type: node.gpuType,
+        price_per_hour: node.pricePerHour,
+        is_active: true,
+        current_jobs: 0, // Would need to calculate from jobs assigned to this node
+        provider: node.provider
+      }));
+      
+      setNodeMetrics(nodeData);
+    } else {
+      // Show zeros when not connected
+      const emptyMetrics: SystemMetrics = {
+        total_nodes: 0,
+        active_nodes: 0,
+        available_nodes: 0,
+        total_jobs: 0,
+        active_jobs: 0,
+        total_compute_power: 0,
+        blockchain_connected: false,
+        last_updated: new Date().toISOString(),
+        network_name: 'Not Connected'
+      };
+      
+      setSystemMetrics(emptyMetrics);
+      setNodeMetrics([]);
     }
-  };
-
-  useEffect(() => {
-    fetchInitialData();
-    connectSystemWebSocket();
-
-    return () => {
-      if (systemWs) {
-        systemWs.close();
-      }
-    };
-  }, []);
-
-  const getHealthColor = (value: number, thresholds: { warning: number; critical: number }) => {
-    if (value >= thresholds.critical) return 'text-red-500';
-    if (value >= thresholds.warning) return 'text-yellow-500';
-    return 'text-green-500';
-  };
-
-  const formatBytes = (bytes: number) => {
-    return `${bytes.toFixed(1)} GB`;
-  };
+  }, [isConnected, availableNodes, userJobs]);  useEffect(() => {
+    updateMetricsFromBlockchain();
+    
+    // Update every 30 seconds
+    const interval = setInterval(updateMetricsFromBlockchain, 30000);
+    
+    return () => clearInterval(interval);
+  }, [updateMetricsFromBlockchain]);
 
   const formatTFLOPS = (tflops: number) => {
     return `${tflops.toFixed(1)} TFLOPS`;
@@ -142,17 +101,15 @@ const SystemMonitoringDashboard: React.FC = () => {
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-bold">Eryza GPU Network Monitor</h1>
+          <h1 className="text-3xl font-bold">Eryza Compute Network Monitor</h1>
           <div className="flex items-center space-x-4">
             <div className={`flex items-center space-x-2 ${
-              connectionStatus === 'connected' ? 'text-green-400' : 
-              connectionStatus === 'connecting' ? 'text-yellow-400' : 'text-red-400'
+              isConnected ? 'text-green-400' : 'text-red-400'
             }`}>
               <div className={`w-3 h-3 rounded-full ${
-                connectionStatus === 'connected' ? 'bg-green-400' : 
-                connectionStatus === 'connecting' ? 'bg-yellow-400' : 'bg-red-400'
+                isConnected ? 'bg-green-400' : 'bg-red-400'
               }`}></div>
-              <span className="text-sm font-medium">{connectionStatus}</span>
+              <span className="text-sm font-medium">{isConnected ? 'Connected' : 'Disconnected'}</span>
             </div>
             {systemMetrics && (
               <div className={`flex items-center space-x-2 ${
@@ -161,7 +118,7 @@ const SystemMonitoringDashboard: React.FC = () => {
                 <div className={`w-3 h-3 rounded-full ${
                   systemMetrics.blockchain_connected ? 'bg-green-400' : 'bg-red-400'
                 }`}></div>
-                <span className="text-sm font-medium">Blockchain</span>
+                <span className="text-sm font-medium">{systemMetrics.network_name}</span>
               </div>
             )}
           </div>
@@ -171,10 +128,10 @@ const SystemMonitoringDashboard: React.FC = () => {
         {systemMetrics && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
             <Card className="bg-gray-800 p-6">
-              <h3 className="text-lg font-semibold mb-2">Total GPUs</h3>
-              <div className="text-3xl font-bold text-blue-400">{systemMetrics.total_gpus}</div>
+              <h3 className="text-lg font-semibold mb-2">Total Nodes</h3>
+              <div className="text-3xl font-bold text-blue-400">{systemMetrics.total_nodes}</div>
               <div className="text-sm text-gray-400 mt-2">
-                {systemMetrics.rented_gpus} rented • {systemMetrics.available_gpus} available
+                {systemMetrics.active_nodes} active • {systemMetrics.available_nodes} available
               </div>
             </Card>
 
@@ -187,166 +144,97 @@ const SystemMonitoringDashboard: React.FC = () => {
             </Card>
 
             <Card className="bg-gray-800 p-6">
-              <h3 className="text-lg font-semibold mb-2">System Utilization</h3>
-              <div className={`text-3xl font-bold ${getHealthColor(systemMetrics.avg_system_utilization, { warning: 80, critical: 95 })}`}>
-                {systemMetrics.avg_system_utilization.toFixed(1)}%
+              <h3 className="text-lg font-semibold mb-2">Active Jobs</h3>
+              <div className="text-3xl font-bold text-green-400">
+                {systemMetrics.active_jobs}
               </div>
-              <div className="w-full bg-gray-700 rounded-full h-2 mt-2">
-                <div
-                  className="bg-blue-500 h-2 rounded-full transition-all duration-500"
-                  style={{ width: `${systemMetrics.avg_system_utilization}%` }}
-                ></div>
+              <div className="text-sm text-gray-400 mt-2">
+                {systemMetrics.total_jobs} total jobs
               </div>
             </Card>
 
             <Card className="bg-gray-800 p-6">
-              <h3 className="text-lg font-semibold mb-2">Active Subnets</h3>
-              <div className="text-3xl font-bold text-green-400">{systemMetrics.active_subnets}</div>
-              <div className="text-sm text-gray-400 mt-2">Running subnet clusters</div>
+              <h3 className="text-lg font-semibold mb-2">Network Status</h3>
+              <div className={`text-3xl font-bold ${systemMetrics.blockchain_connected ? 'text-green-400' : 'text-red-400'}`}>
+                {systemMetrics.blockchain_connected ? 'ONLINE' : 'OFFLINE'}
+              </div>
+              <div className="text-sm text-gray-400 mt-2">{systemMetrics.network_name}</div>
             </Card>
           </div>
         )}
 
-        {/* GPU Grid */}
+        {/* Node Grid */}
         <div className="mb-8">
-          <h2 className="text-2xl font-bold mb-6">GPU Status</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {Object.values(gpuMetrics).map((gpu) => (
-              <Card key={gpu.gpu_id} className="bg-gray-800 p-6">
-                <div className="flex justify-between items-start mb-4">
-                  <h3 className="text-lg font-semibold">{gpu.gpu_id}</h3>
-                  <div className={`px-3 py-1 rounded-full text-xs font-medium ${
-                    gpu.is_rented ? 'bg-green-900 text-green-300' : 'bg-gray-700 text-gray-300'
-                  }`}>
-                    {gpu.is_rented ? 'RENTED' : 'AVAILABLE'}
-                  </div>
-                </div>
-
-                <div className="space-y-3">
-                  <div className="flex justify-between">
-                    <span className="text-gray-400">Utilization</span>
-                    <span className={getHealthColor(gpu.utilization, { warning: 80, critical: 95 })}>
-                      {gpu.utilization.toFixed(1)}%
-                    </span>
-                  </div>
-                  <div className="w-full bg-gray-700 rounded-full h-2">
-                    <div
-                      className="bg-blue-500 h-2 rounded-full transition-all duration-500"
-                      style={{ width: `${gpu.utilization}%` }}
-                    ></div>
-                  </div>
-
-                  <div className="flex justify-between">
-                    <span className="text-gray-400">Temperature</span>
-                    <span className={getHealthColor(gpu.temperature, { warning: 85, critical: 90 })}>
-                      {gpu.temperature.toFixed(1)}°C
-                    </span>
-                  </div>
-
-                  <div className="flex justify-between">
-                    <span className="text-gray-400">Memory</span>
-                    <span className="text-white">
-                      {formatBytes(gpu.memory_used)} / {formatBytes(gpu.memory_total)}
-                    </span>
-                  </div>
-                  <div className="w-full bg-gray-700 rounded-full h-2">
-                    <div
-                      className="bg-purple-500 h-2 rounded-full transition-all duration-500"
-                      style={{ width: `${(gpu.memory_used / gpu.memory_total) * 100}%` }}
-                    ></div>
-                  </div>
-
-                  <div className="flex justify-between">
-                    <span className="text-gray-400">Power Draw</span>
-                    <span className={getHealthColor(gpu.power_draw, { warning: 350, critical: 400 })}>
-                      {gpu.power_draw.toFixed(0)}W
-                    </span>
-                  </div>
-
-                  {gpu.current_subnet && (
-                    <div className="flex justify-between">
-                      <span className="text-gray-400">Subnet</span>
-                      <span className="text-blue-400 text-sm font-medium">
-                        {gpu.current_subnet.slice(-6)}
-                      </span>
-                    </div>
-                  )}
-                </div>
-              </Card>
-            ))}
-          </div>
-        </div>
-
-        {/* Subnet Status */}
-        {Object.keys(subnetMetrics).length > 0 && (
-          <div>
-            <h2 className="text-2xl font-bold mb-6">Subnet Status</h2>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {Object.values(subnetMetrics).map((subnet) => (
-                <Card key={subnet.subnet_id} className="bg-gray-800 p-6">
+          <h2 className="text-2xl font-bold mb-6">Compute Nodes</h2>
+          {nodeMetrics.length === 0 ? (
+            <Card className="bg-gray-800 p-8 text-center">
+              <p className="text-gray-400 text-lg">No compute nodes registered</p>
+              <p className="text-gray-500 text-sm mt-2">
+                {isConnected ? 'Register a node to get started' : 'Connect wallet to view nodes'}
+              </p>
+            </Card>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {nodeMetrics.map((node) => (
+                <Card key={node.node_id} className="bg-gray-800 p-6">
                   <div className="flex justify-between items-start mb-4">
-                    <div>
-                      <h3 className="text-lg font-semibold">{subnet.subnet_id}</h3>
-                      <p className="text-gray-400 text-sm">{subnet.purpose}</p>
-                    </div>
+                    <h3 className="text-lg font-semibold">Node #{node.node_id}</h3>
                     <div className={`px-3 py-1 rounded-full text-xs font-medium ${
-                      subnet.active ? 'bg-green-900 text-green-300' : 'bg-red-900 text-red-300'
+                      node.is_active ? 'bg-green-900 text-green-300' : 'bg-gray-700 text-gray-300'
                     }`}>
-                      {subnet.active ? 'ACTIVE' : 'INACTIVE'}
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4 mb-4">
-                    <div>
-                      <span className="text-gray-400 text-sm">GPUs</span>
-                      <div className="text-xl font-bold text-blue-400">{subnet.gpu_count}</div>
-                    </div>
-                    <div>
-                      <span className="text-gray-400 text-sm">Compute</span>
-                      <div className="text-xl font-bold text-purple-400">
-                        {formatTFLOPS(subnet.total_compute)}
-                      </div>
+                      {node.is_active ? 'ACTIVE' : 'INACTIVE'}
                     </div>
                   </div>
 
                   <div className="space-y-3">
                     <div className="flex justify-between">
-                      <span className="text-gray-400">Avg Utilization</span>
-                      <span className={getHealthColor(subnet.avg_utilization, { warning: 80, critical: 95 })}>
-                        {subnet.avg_utilization.toFixed(1)}%
-                      </span>
-                    </div>
-                    <div className="w-full bg-gray-700 rounded-full h-2">
-                      <div
-                        className="bg-blue-500 h-2 rounded-full transition-all duration-500"
-                        style={{ width: `${subnet.avg_utilization}%` }}
-                      ></div>
+                      <span className="text-gray-400">Type</span>
+                      <span className="text-white">{node.node_type}</span>
                     </div>
 
                     <div className="flex justify-between">
-                      <span className="text-gray-400">Avg Temperature</span>
-                      <span className={getHealthColor(subnet.avg_temperature, { warning: 85, critical: 90 })}>
-                        {subnet.avg_temperature.toFixed(1)}°C
-                      </span>
+                      <span className="text-gray-400">CPU Cores</span>
+                      <span className="text-blue-400">{node.cpu_cores}</span>
                     </div>
 
                     <div className="flex justify-between">
-                      <span className="text-gray-400">Total Power</span>
-                      <span className="text-white">{subnet.total_power_draw.toFixed(0)}W</span>
+                      <span className="text-gray-400">Memory</span>
+                      <span className="text-purple-400">{node.memory_gb} GB</span>
+                    </div>
+
+                    {node.gpu_count > 0 && (
+                      <>
+                        <div className="flex justify-between">
+                          <span className="text-gray-400">GPUs</span>
+                          <span className="text-green-400">{node.gpu_count}x {node.gpu_type}</span>
+                        </div>
+                      </>
+                    )}
+
+                    <div className="flex justify-between">
+                      <span className="text-gray-400">Price/Hour</span>
+                      <span className="text-yellow-400">${node.price_per_hour}</span>
                     </div>
 
                     <div className="flex justify-between">
-                      <span className="text-gray-400">Coordinator</span>
-                      <span className="text-blue-400 text-sm font-mono">
-                        {subnet.coordinator.slice(0, 6)}...{subnet.coordinator.slice(-4)}
-                      </span>
+                      <span className="text-gray-400">Current Jobs</span>
+                      <span className="text-white">{node.current_jobs}</span>
+                    </div>
+
+                    <div className="pt-2 border-t border-gray-700">
+                      <div className="flex justify-between">
+                        <span className="text-gray-400 text-sm">Provider</span>
+                        <span className="text-blue-400 text-sm font-mono">
+                          {node.provider.slice(0, 6)}...{node.provider.slice(-4)}
+                        </span>
+                      </div>
                     </div>
                   </div>
                 </Card>
               ))}
             </div>
-          </div>
-        )}
+          )}
+        </div>
 
         {/* Footer */}
         <div className="mt-8 text-center text-gray-400 text-sm">
